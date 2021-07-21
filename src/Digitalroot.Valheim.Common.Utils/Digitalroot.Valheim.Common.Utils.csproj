@@ -12,7 +12,7 @@
     <PackageProjectUrl>https://github.com/Digitalroot-Valheim/Digitalroot.Valheim.Common.Utils</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Digitalroot-Valheim/Digitalroot.Valheim.Common.Utils</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageIcon>ValheimRcon_black.ico</PackageIcon>
+    <PackageIcon>ValheimRcon_black.png</PackageIcon>
     <PackageIconUrl />
     <PackageTags>valheim, digitalroot, utils</PackageTags>
     <Authors>Digitalroot</Authors>
@@ -39,7 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="ico\ValheimRcon_black.ico">
+    <None Include="ico\ValheimRcon_black.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
