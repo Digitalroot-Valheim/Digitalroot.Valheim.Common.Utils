@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Digitalroot.Valheim.Common.Utils</AssemblyName>
+    <TargetFrameworks>netstandard2.1;net462;net472;net48</TargetFrameworks>
+    <PackageId>Digitalroot.Valheim.Common.Utils</PackageId>
+    <RootNamespace>Digitalroot.Valheim.Common</RootNamespace>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <Copyright>Copyright © Digitalroot Technologies 2021</Copyright>
+    <PackageProjectUrl>https://github.com/Digitalroot-Valheim/Digitalroot.Valheim.Common.Utils</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Digitalroot-Valheim/Digitalroot.Valheim.Common.Utils</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>ValheimRcon_black.ico</PackageIcon>
+    <PackageIconUrl />
+    <PackageTags>valheim, digitalroot, utils</PackageTags>
+    <Authors>Digitalroot</Authors>
+    <Company>Digitalroot Technologies</Company>
+    <Product>Digitalroot Valheim Utils</Product>
+    <Description>Utils for Valheim</Description>
+    <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
+    <NeutralLanguage>en-US</NeutralLanguage>
+    <PackageVersion>1.0.0</PackageVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
+    <Version>1.0.0</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.0.3" />
+    <PackageReference Include="Pfhoenix.Valheim.ModProjectReferences" Version="1.0.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="ico\ValheimRcon_black.ico">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+</Project>
