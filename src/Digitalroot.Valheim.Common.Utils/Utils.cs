@@ -8,8 +8,67 @@ namespace Digitalroot.Valheim.Common
 {
   public static class Utils
   {
-    public static string Namespace = nameof(Common);
-    public static readonly bool IsRunningFromNUnit =  AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.ToLowerInvariant().StartsWith("nunit.framework"));
+    public static DirectoryInfo AssemblyDirectory
+    {
+      get
+      {
+        string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+        UriBuilder uri = new UriBuilder(codeBase);
+        var fileInfo = new FileInfo(Uri.UnescapeDataString(uri.Path));
+        return fileInfo.Directory;
+      }
+    }
+
+    public static bool IsDedicated => ZNet.instance.IsDedicated();
+
+    public static bool IsServer => ZNet.instance.IsServer();
+
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static bool IsRunningFromNUnit => AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.ToLowerInvariant().StartsWith("nunit.framework"));
+
+    // ReSharper disable once MemberCanBePrivate.Global
+    public static string Namespace => nameof(Common);
+
+    internal static IEnumerable<string> AllNames(Type type)
+    {
+      var f = type.GetFields().Where(f1 => f1.FieldType == typeof(string));
+      foreach (var fieldInfo in f)
+      {
+        yield return fieldInfo.GetValue(null).ToString();
+      }
+    }
+
+    public static T GetPrivateField<T>(object instance, string name)
+    {
+      FieldInfo var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+
+      if (var == null)
+      {
+        Log.Error("Variable " + name + " does not exist on type: " + instance.GetType());
+        return default(T);
+      }
+
+      return (T) var.GetValue(instance);
+    }
+
+    public static object InvokePrivate(object instance, string name, object[] args = null)
+    {
+      MethodInfo method = instance.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
+
+      if (method == null)
+      {
+        Type[] types = args == null ? new Type[0] : args.Select(arg => arg.GetType()).ToArray();
+        method = instance.GetType().GetMethod(name, types);
+      }
+
+      if (method == null)
+      {
+        Log.Error("Method " + name + " does not exist on type: " + instance.GetType());
+        return null;
+      }
+
+      return method.Invoke(instance, args);
+    }
 
     // Source: EpicLoot
     public static bool IsObjectDBReady()
@@ -17,6 +76,13 @@ namespace Digitalroot.Valheim.Common
       Log.Trace($"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       // Hack, just making sure the built-in items and prefabs have loaded
       return (ObjectDB.instance != null && ObjectDB.instance.m_items.Count != 0 && ObjectDB.instance.GetItemPrefab("Amber") != null) || IsRunningFromNUnit;
+    }
+
+    public static bool IsPlayerReady()
+    {
+      Log.Trace($"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      // Log.Trace($"Player.m_localPlayer == null : {Player.m_localPlayer == null}");
+      return Player.m_localPlayer != null;
     }
 
     public static bool IsZNetSceneReady()
@@ -32,30 +98,22 @@ namespace Digitalroot.Valheim.Common
       return ZNet.instance != null;
     }
 
-    public static bool IsPlayerReady()
-    {
-      Log.Trace($"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
-      // Log.Trace($"Player.m_localPlayer == null : {Player.m_localPlayer == null}");
-      return Player.m_localPlayer != null;
-    }
-
-    public static bool IsServer => ZNet.instance.IsServer();
-    public static bool IsDedicated => ZNet.instance.IsDedicated();
-
     public static string Localize(string value)
     {
       return Localization.instance.Localize(value);
     }
 
-    public static DirectoryInfo AssemblyDirectory
+    public static void SetPrivateField(object instance, string name, object value)
     {
-      get
+      FieldInfo var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+
+      if (var == null)
       {
-        string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-        UriBuilder uri = new UriBuilder(codeBase);
-        var fileInfo = new FileInfo(Uri.UnescapeDataString(uri.Path));
-        return fileInfo.Directory;
+        Log.Error("Variable " + name + " does not exist on type: " + instance.GetType());
+        return;
       }
+
+      var.SetValue(instance, value);
     }
 
     public static void ToggleTrace(bool value)
@@ -68,15 +126,6 @@ namespace Digitalroot.Valheim.Common
         default:
           Log.DisableTrace();
           break;
-      }
-    }
-
-    internal static IEnumerable<string> AllNames(Type type)
-    {
-      var f = type.GetFields().Where(f1 => f1.FieldType == typeof(string));
-      foreach (var fieldInfo in f)
-      {
-        yield return fieldInfo.GetValue(null).ToString();
       }
     }
   }
