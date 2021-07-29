@@ -29,7 +29,7 @@ namespace Digitalroot.Valheim.Common
     // ReSharper disable once MemberCanBePrivate.Global
     public static string Namespace => nameof(Common);
 
-    internal static IEnumerable<string> AllNames(Type type)
+    public static IEnumerable<string> AllNames(Type type)
     {
       var f = type.GetFields().Where(f1 => f1.FieldType == typeof(string));
       foreach (var fieldInfo in f)
