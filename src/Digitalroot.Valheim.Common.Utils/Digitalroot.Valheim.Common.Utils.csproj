@@ -21,10 +21,10 @@
     <Description>Utils for Valheim</Description>
     <PackageReleaseNotes>Added More Utils</PackageReleaseNotes>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageVersion>1.0.1</PackageVersion>
-    <AssemblyVersion>1.0.1</AssemblyVersion>
-    <FileVersion>1.0.1</FileVersion>
-    <Version>1.0.1</Version>
+    <PackageVersion>1.0.2</PackageVersion>
+    <AssemblyVersion>1.0.2</AssemblyVersion>
+    <FileVersion>1.0.2</FileVersion>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.0.3" />
+    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.0.4" />
     <PackageReference Include="Pfhoenix.Valheim.ModProjectReferences" Version="1.0.6" />
   </ItemGroup>
 
