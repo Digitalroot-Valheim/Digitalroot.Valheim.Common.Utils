@@ -29,7 +29,7 @@ namespace Digitalroot.Valheim.Common
     public static bool IsRunningFromNUnit => AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.ToLowerInvariant().StartsWith("nunit.framework"));
 
     // ReSharper disable once MemberCanBePrivate.Global
-    public static string Namespace => nameof(Common);
+    public static string Namespace => nameof(Digitalroot.Valheim.Common);
 
     public static IEnumerable<string> AllNames(Type type)
     {
