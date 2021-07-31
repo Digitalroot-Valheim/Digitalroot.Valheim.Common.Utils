@@ -8,6 +8,8 @@ namespace Digitalroot.Valheim.Common
 {
   public static class Utils
   {
+    private static readonly ITraceableLogging Logger = new StaticSourceLogger();
+
     public static DirectoryInfo AssemblyDirectory
     {
       get
@@ -44,7 +46,7 @@ namespace Digitalroot.Valheim.Common
 
       if (var == null)
       {
-        Log.Error("Variable " + name + " does not exist on type: " + instance.GetType());
+        Log.Error(Logger,"Variable " + name + " does not exist on type: " + instance.GetType());
         return default(T);
       }
 
@@ -63,7 +65,7 @@ namespace Digitalroot.Valheim.Common
 
       if (method == null)
       {
-        Log.Error("Method " + name + " does not exist on type: " + instance.GetType());
+        Log.Error(Logger, "Method " + name + " does not exist on type: " + instance.GetType());
         return null;
       }
 
@@ -73,27 +75,27 @@ namespace Digitalroot.Valheim.Common
     // Source: EpicLoot
     public static bool IsObjectDBReady()
     {
-      Log.Trace($"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       // Hack, just making sure the built-in items and prefabs have loaded
       return (ObjectDB.instance != null && ObjectDB.instance.m_items.Count != 0 && ObjectDB.instance.GetItemPrefab("Amber") != null) || IsRunningFromNUnit;
     }
 
     public static bool IsPlayerReady()
     {
-      Log.Trace($"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       // Log.Trace($"Player.m_localPlayer == null : {Player.m_localPlayer == null}");
       return Player.m_localPlayer != null;
     }
 
     public static bool IsZNetSceneReady()
     {
-      Log.Trace($"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      Log.Trace(Logger,$"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       return ZNetScene.instance != null && ZNetScene.instance?.m_prefabs != null && ZNetScene.instance?.m_prefabs?.Count > 0;
     }
 
     public static bool IsZNetReady()
     {
-      Log.Trace($"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       // Log.Trace($"ZNet.instance != null : {ZNet.instance != null}");
       return ZNet.instance != null;
     }
@@ -109,24 +111,11 @@ namespace Digitalroot.Valheim.Common
 
       if (var == null)
       {
-        Log.Error("Variable " + name + " does not exist on type: " + instance.GetType());
+        Log.Error(Logger, "Variable " + name + " does not exist on type: " + instance.GetType());
         return;
       }
 
       var.SetValue(instance, value);
-    }
-
-    public static void ToggleTrace(bool value)
-    {
-      switch (value)
-      {
-        case true:
-          Log.EnableTrace();
-          break;
-        default:
-          Log.DisableTrace();
-          break;
-      }
     }
   }
 }

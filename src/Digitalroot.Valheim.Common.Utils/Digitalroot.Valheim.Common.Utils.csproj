@@ -3,6 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Digitalroot.Valheim.Common.Utils</AssemblyName>
     <TargetFrameworks>netstandard2.1;net462;net472;net48</TargetFrameworks>
+    <LangVersion>latest</LangVersion>
     <PackageId>Digitalroot.Valheim.Common.Utils</PackageId>
     <RootNamespace>Digitalroot.Valheim.Common</RootNamespace>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -19,12 +20,11 @@
     <Company>Digitalroot Technologies</Company>
     <Product>Digitalroot Valheim Utils</Product>
     <Description>Utils for Valheim</Description>
-    <PackageReleaseNotes>Added More Utils</PackageReleaseNotes>
+    <PackageReleaseNotes>Update NuGet Packages</PackageReleaseNotes>
     <NeutralLanguage>en-US</NeutralLanguage>
-    <PackageVersion>1.0.2</PackageVersion>
-    <AssemblyVersion>1.0.2</AssemblyVersion>
-    <FileVersion>1.0.2</FileVersion>
-    <Version>1.0.2</Version>
+    <PackageVersion>1.0.3</PackageVersion>
+    <AssemblyVersion>1.0.3</AssemblyVersion>
+    <FileVersion>1.0.3</FileVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.1|AnyCPU'">
@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.0.4" />
+    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.1" />
     <PackageReference Include="Pfhoenix.Valheim.ModProjectReferences" Version="1.0.6" />
   </ItemGroup>
 
