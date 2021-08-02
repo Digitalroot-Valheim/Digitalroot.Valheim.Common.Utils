@@ -34,7 +34,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.1" />
+    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.6" />
     <PackageReference Include="Pfhoenix.Valheim.ModProjectReferences" Version="1.0.6" />
   </ItemGroup>
 

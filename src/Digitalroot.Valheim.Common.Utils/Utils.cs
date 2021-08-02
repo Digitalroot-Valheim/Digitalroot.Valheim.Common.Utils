@@ -8,7 +8,16 @@ namespace Digitalroot.Valheim.Common
 {
   public static class Utils
   {
-    private static readonly ITraceableLogging Logger = new StaticSourceLogger();
+    private static readonly ITraceableLogging Logger = GetLogger();
+
+    private static ITraceableLogging GetLogger()
+    {
+#if DEBUG
+      return new StaticSourceLogger(true);
+#else
+      return new StaticSourceLogger();
+#endif
+    }
 
     public static DirectoryInfo AssemblyDirectory
     {
