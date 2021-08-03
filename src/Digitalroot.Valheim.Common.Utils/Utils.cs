@@ -1,4 +1,6 @@
-﻿using System;
+﻿using BepInEx.Bootstrap;
+using JetBrains.Annotations;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,6 +21,7 @@ namespace Digitalroot.Valheim.Common
 #endif
     }
 
+    [UsedImplicitly]
     public static DirectoryInfo AssemblyDirectory
     {
       get
@@ -30,16 +33,18 @@ namespace Digitalroot.Valheim.Common
       }
     }
 
-    public static bool IsDedicated => ZNet.instance.IsDedicated();
+    [UsedImplicitly] public static bool IsDedicated => ZNet.instance.IsDedicated();
 
-    public static bool IsServer => ZNet.instance.IsServer();
+    [UsedImplicitly] public static bool IsServer => ZNet.instance.IsServer();
 
     // ReSharper disable once MemberCanBePrivate.Global
+    // ReSharper disable once StringLiteralTypo
     public static bool IsRunningFromNUnit => AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.ToLowerInvariant().StartsWith("nunit.framework"));
 
     // ReSharper disable once MemberCanBePrivate.Global
-    public static string Namespace => nameof(Digitalroot.Valheim.Common);
+    public static string Namespace => $"Digitalroot.Valheim.{nameof(Common)}";
 
+    [UsedImplicitly]
     public static IEnumerable<string> AllNames(Type type)
     {
       var f = type.GetFields().Where(f1 => f1.FieldType == typeof(string));
@@ -49,6 +54,7 @@ namespace Digitalroot.Valheim.Common
       }
     }
 
+    [UsedImplicitly]
     public static T GetPrivateField<T>(object instance, string name)
     {
       FieldInfo var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
@@ -62,6 +68,7 @@ namespace Digitalroot.Valheim.Common
       return (T) var.GetValue(instance);
     }
 
+    [UsedImplicitly]
     public static object InvokePrivate(object instance, string name, object[] args = null)
     {
       MethodInfo method = instance.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
@@ -81,14 +88,14 @@ namespace Digitalroot.Valheim.Common
       return method.Invoke(instance, args);
     }
 
-    // Source: EpicLoot
+    [UsedImplicitly]
     public static bool IsObjectDBReady()
     {
       Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
-      // Hack, just making sure the built-in items and prefabs have loaded
       return (ObjectDB.instance != null && ObjectDB.instance.m_items.Count != 0 && ObjectDB.instance.GetItemPrefab("Amber") != null) || IsRunningFromNUnit;
     }
 
+    [UsedImplicitly]
     public static bool IsPlayerReady()
     {
       Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -96,12 +103,14 @@ namespace Digitalroot.Valheim.Common
       return Player.m_localPlayer != null;
     }
 
+    [UsedImplicitly]
     public static bool IsZNetSceneReady()
     {
       Log.Trace(Logger,$"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       return ZNetScene.instance != null && ZNetScene.instance?.m_prefabs != null && ZNetScene.instance?.m_prefabs?.Count > 0;
     }
 
+    [UsedImplicitly]
     public static bool IsZNetReady()
     {
       Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
@@ -109,11 +118,13 @@ namespace Digitalroot.Valheim.Common
       return ZNet.instance != null;
     }
 
+    [UsedImplicitly]
     public static string Localize(string value)
     {
       return Localization.instance.Localize(value);
     }
 
+    [UsedImplicitly]
     public static void SetPrivateField(object instance, string name, object value)
     {
       FieldInfo var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
@@ -126,5 +137,17 @@ namespace Digitalroot.Valheim.Common
 
       var.SetValue(instance, value);
     }
+
+    [UsedImplicitly]
+    public static List<T> AllOf<T>() => Enum.GetValues(typeof(T)).OfType<T>().ToList();
+
+    [UsedImplicitly]
+    public static bool IsGameInMainScene() => ZNetScene.instance != null;
+
+    [UsedImplicitly]
+    public static bool DoesPluginExist(string pluginGuid) => Chainloader.PluginInfos.Any(keyValuePair => keyValuePair.Value.Metadata.GUID == pluginGuid);
+
+    [UsedImplicitly]
+    public static string GetPluginPath(Type modPluginType) => Path.GetDirectoryName(modPluginType.Assembly.Location);
   }
 }
