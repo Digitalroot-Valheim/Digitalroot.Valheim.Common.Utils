@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Digitalroot.Valheim.Common
 {
@@ -34,10 +35,21 @@ namespace Digitalroot.Valheim.Common
       }
     }
 
+    /// <summary>
+    /// Does not work in Awake()
+    /// </summary>
     [UsedImplicitly] public static bool IsDedicated => ZNet.instance.IsDedicated();
 
+    /// <summary>
+    /// Does not work in Awake()
+    /// </summary>
     [UsedImplicitly] public static bool IsServer => ZNet.instance.IsServer();
 
+    /// <summary>
+    /// Works in Awake()
+    /// </summary>
+    [UsedImplicitly] public static bool IsHeadless() => SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+    
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once StringLiteralTypo
     public static bool IsRunningFromNUnit => AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.ToLowerInvariant().StartsWith("nunit.framework"));
@@ -51,8 +63,7 @@ namespace Digitalroot.Valheim.Common
     [UsedImplicitly]
     public static IEnumerable<string> AllNames(Type type)
     {
-      var f = type.GetFields().Where(f1 => f1.FieldType == typeof(string));
-      foreach (var fieldInfo in f)
+      foreach (var fieldInfo in type.GetFields().Where(f1 => f1.FieldType == typeof(string)))
       {
         yield return fieldInfo.GetValue(null).ToString();
       }
