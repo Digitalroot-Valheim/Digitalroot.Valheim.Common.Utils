@@ -97,7 +97,7 @@ namespace Digitalroot.Valheim.Common
     public static Vector3 GetLocalPlayersPosition() => Player.m_localPlayer.transform.position;
 
     [UsedImplicitly]
-    public static ObjectDB GetObjectDB() => ObjectDB.instance;
+    public static ObjectDB GetObjectDB() => IsObjectDBReady() ? ObjectDB.instance : null;
 
     [UsedImplicitly]
     public static string GetPluginPath(Type modPluginType) => Path.GetDirectoryName(modPluginType.Assembly.Location);
@@ -181,6 +181,7 @@ namespace Digitalroot.Valheim.Common
       return Localization.instance.Localize(value);
     }
 
+    [UsedImplicitly]
     public static Vector3 GetStartTemplesPosition()
     {
       if (ZoneSystem.instance.FindClosestLocation("StartTemple", Vector3.zero, out ZoneSystem.LocationInstance locationInstance))
@@ -207,13 +208,16 @@ namespace Digitalroot.Valheim.Common
       var.SetValue(instance, value);
     }
 
+    [UsedImplicitly]
     public static GameObject Spawn(string prefabName, GameObject prefab, Vector3 location, Transform parent)
     {
+      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefab?.name}, {location}, {parent.name})");
       if (prefab == null) return null;
       var instance = UnityEngine.Object.Instantiate(prefab, location, Quaternion.identity, parent);
       return instance;
     }
 
+    [UsedImplicitly]
     public static GameObject Spawn(GameObject prefab, Vector3 location, Transform parent)
     {
       Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefab.name}, {location}, {parent.name})");
