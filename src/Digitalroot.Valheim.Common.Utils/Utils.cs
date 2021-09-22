@@ -97,7 +97,7 @@ namespace Digitalroot.Valheim.Common
     public static Vector3 GetLocalPlayersPosition() => Player.m_localPlayer.transform.position;
 
     [UsedImplicitly]
-    public static ObjectDB GetObjectDB() => IsObjectDBReady() ? ObjectDB.instance : null;
+    public static ObjectDB GetObjectDB() => ObjectDB.instance != null ? ObjectDB.instance : null;
 
     [UsedImplicitly]
     public static string GetPluginPath(Type modPluginType) => Path.GetDirectoryName(modPluginType.Assembly.Location);
@@ -105,7 +105,6 @@ namespace Digitalroot.Valheim.Common
     [UsedImplicitly]
     public static GameObject GetPrefab(string itemName) => IsZNetSceneReady() ? ZNetScene.instance.GetPrefab(itemName) : null;
     
-
     [UsedImplicitly]
     public static GameObject GetPrefab(int hash) => IsZNetSceneReady() ? ZNetScene.instance.GetPrefab(hash) : null;
 
