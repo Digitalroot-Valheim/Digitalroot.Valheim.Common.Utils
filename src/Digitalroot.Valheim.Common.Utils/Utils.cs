@@ -85,10 +85,28 @@ namespace Digitalroot.Valheim.Common
     public static Vector3 GetGroundHeight(Vector3 vector3) => new(vector3.x, ZoneSystem.instance.GetGroundHeight(vector3), vector3.z);
 
     [UsedImplicitly]
+    public static GameObject GetItemPrefab(string itemName) => GetObjectDB().GetItemPrefab(itemName);
+
+    [UsedImplicitly]
+    public static GameObject GetItemPrefab(int hash) => GetObjectDB().GetItemPrefab(hash);
+
+    [UsedImplicitly]
+    public static Player GetLocalPlayer() => Player.m_localPlayer;
+
+    [UsedImplicitly]
     public static Vector3 GetLocalPlayersPosition() => Player.m_localPlayer.transform.position;
 
     [UsedImplicitly]
+    public static ObjectDB GetObjectDB() => ObjectDB.instance;
+
+    [UsedImplicitly]
     public static string GetPluginPath(Type modPluginType) => Path.GetDirectoryName(modPluginType.Assembly.Location);
+
+    [UsedImplicitly]
+    public static GameObject GetPrefab(string itemName) => ZNetScene.instance.GetPrefab(itemName);
+
+    [UsedImplicitly]
+    public static GameObject GetPrefab(int hash) => ZNetScene.instance.GetPrefab(hash);
 
     [UsedImplicitly]
     public static T GetPrivateField<T>(object instance, string name)
@@ -131,15 +149,14 @@ namespace Digitalroot.Valheim.Common
     public static bool IsObjectDBReady()
     {
       Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
-      return (ObjectDB.instance != null && ObjectDB.instance.m_items.Count != 0 && ObjectDB.instance.GetItemPrefab("Amber") != null) || IsRunningFromNUnit;
+      return (GetObjectDB() != null && GetObjectDB().m_items.Count != 0 && GetItemPrefab("Amber") != null) || IsRunningFromNUnit;
     }
 
     [UsedImplicitly]
     public static bool IsPlayerReady()
     {
       Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
-      // Log.Trace($"Player.m_localPlayer == null : {Player.m_localPlayer == null}");
-      return Player.m_localPlayer != null;
+      return GetLocalPlayer() != null;
     }
 
     [UsedImplicitly]
