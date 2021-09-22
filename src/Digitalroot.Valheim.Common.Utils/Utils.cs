@@ -85,10 +85,10 @@ namespace Digitalroot.Valheim.Common
     public static Vector3 GetGroundHeight(Vector3 vector3) => new(vector3.x, ZoneSystem.instance.GetGroundHeight(vector3), vector3.z);
 
     [UsedImplicitly]
-    public static GameObject GetItemPrefab(string itemName) => GetObjectDB().GetItemPrefab(itemName);
+    public static GameObject GetItemPrefab(string itemName) => IsObjectDBReady() ? GetObjectDB().GetItemPrefab(itemName) : null;
 
     [UsedImplicitly]
-    public static GameObject GetItemPrefab(int hash) => GetObjectDB().GetItemPrefab(hash);
+    public static GameObject GetItemPrefab(int hash) => IsObjectDBReady() ? GetObjectDB().GetItemPrefab(hash) : null;
 
     [UsedImplicitly]
     public static Player GetLocalPlayer() => Player.m_localPlayer;
@@ -103,10 +103,11 @@ namespace Digitalroot.Valheim.Common
     public static string GetPluginPath(Type modPluginType) => Path.GetDirectoryName(modPluginType.Assembly.Location);
 
     [UsedImplicitly]
-    public static GameObject GetPrefab(string itemName) => ZNetScene.instance.GetPrefab(itemName);
+    public static GameObject GetPrefab(string itemName) => IsZNetSceneReady() ? ZNetScene.instance.GetPrefab(itemName) : null;
+    
 
     [UsedImplicitly]
-    public static GameObject GetPrefab(int hash) => ZNetScene.instance.GetPrefab(hash);
+    public static GameObject GetPrefab(int hash) => IsZNetSceneReady() ? ZNetScene.instance.GetPrefab(hash) : null;
 
     [UsedImplicitly]
     public static T GetPrivateField<T>(object instance, string name)
@@ -163,7 +164,7 @@ namespace Digitalroot.Valheim.Common
     public static bool IsZNetSceneReady()
     {
       Log.Trace(Logger,$"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
-      return ZNetScene.instance != null && ZNetScene.instance?.m_prefabs != null && ZNetScene.instance?.m_prefabs?.Count > 0;
+      return ZNetScene.instance != null && ZNetScene.instance?.m_prefabs is { Count: > 0 };
     }
 
     [UsedImplicitly]
