@@ -8,21 +8,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{538AE9FE-4607-4E9E-84AD-F9BDC01941FE}"
 	ProjectSection(SolutionItems) = preProject
 		..\.gitignore = ..\.gitignore
-		..\LICENSE = ..\LICENSE
-		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{BCAE0D15-8650-4F22-85DD-CB0257FBB5DE}"
-	ProjectSection(SolutionItems) = preProject
-		..\.github\release-drafter.yml = ..\.github\release-drafter.yml
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{237FF064-CFC6-416A-BD1B-CF58B9E98145}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{AEF35CB5-96F3-4E94-969F-45FB4AF9DD50}"
 	ProjectSection(SolutionItems) = preProject
-		..\.github\workflows\ci.yml = ..\.github\workflows\ci.yml
-		..\.github\workflows\drafter.yml = ..\.github\workflows\drafter.yml
-		..\.github\workflows\publish.yml = ..\.github\workflows\publish.yml
-		..\.github\workflows\test-report.yml = ..\.github\workflows\test-report.yml
+		..\docs\LICENSE = ..\docs\LICENSE
+		..\docs\README.md = ..\docs\README.md
 	EndProjectSection
 EndProject
 Global
@@ -42,6 +37,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{BCAE0D15-8650-4F22-85DD-CB0257FBB5DE} = {538AE9FE-4607-4E9E-84AD-F9BDC01941FE}
 		{237FF064-CFC6-416A-BD1B-CF58B9E98145} = {BCAE0D15-8650-4F22-85DD-CB0257FBB5DE}
+		{AEF35CB5-96F3-4E94-969F-45FB4AF9DD50} = {538AE9FE-4607-4E9E-84AD-F9BDC01941FE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {28962BF1-DE69-4A5B-B9F0-CE731DD336F8}
