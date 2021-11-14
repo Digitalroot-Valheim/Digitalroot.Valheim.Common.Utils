@@ -22,6 +22,6 @@ jobs:
       projfilename: Digitalroot.Valheim.Common.Utils
       #srcpath: src
       #unittestpath: UnitTests
-      #skipunittest: true
+      skipunittest: true
       #forceassemblyversion: true
       #awsregion: us-west-2
