@@ -1,0 +1,27 @@
+name: NuGet Release
+
+on:
+  push:
+    branches: [ main ] # Default release branch
+    paths:
+      - 'src/**'   
+      - '.github/workflows/**' 
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  call-workflow-nuget-release:
+    uses: Digitalroot-Valheim/.github/.github/workflows/nuget.release.yml@main
+    secrets:
+      awsaccesskeyid: ${{ secrets.NUGET_S3_REPO_KEY_ID }}
+      awssecretaccesskey: ${{ secrets.NUGET_S3_REPO_KEY_SECRET }}    
+    with:
+      slnfilename: Digitalroot.Valheim.Common.Utils
+      projfilename: Digitalroot.Valheim.Common.Utils
+      #srcpath: src
+      #unittestpath: UnitTests
+      #skipunittest: true
+      #forceassemblyversion: true
+      #awsregion: us-west-2
