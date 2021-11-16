@@ -28,7 +28,7 @@ jobs:
       #unit-test-path: UnitTests
       skip-unit-tests: true
       #force-assembly-version: true
-      create-github-release: false
+      #create-github-release: false
       #aws-region: us-west-2
       nuget-gh-upload: true
       nuget-s3-upload: true
