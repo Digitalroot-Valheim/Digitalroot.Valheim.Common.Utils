@@ -28,8 +28,8 @@ namespace Digitalroot.Valheim.Common
     {
       get
       {
-        string codeBase = Assembly.GetExecutingAssembly().CodeBase;
-        UriBuilder uri = new UriBuilder(codeBase);
+        var codeBase = Assembly.GetExecutingAssembly().CodeBase;
+        UriBuilder uri = new(codeBase);
         var fileInfo = new FileInfo(Uri.UnescapeDataString(uri.Path));
         return fileInfo.Directory;
       }
@@ -97,7 +97,7 @@ namespace Digitalroot.Valheim.Common
     public static Vector3 GetLocalPlayersPosition() => Player.m_localPlayer.transform.position;
 
     [UsedImplicitly]
-    public static ObjectDB GetObjectDB() => ObjectDB.instance != null ? ObjectDB.instance : null;
+    public static ObjectDB GetObjectDB() => ObjectDB.instance;
 
     [UsedImplicitly]
     public static string GetPluginPath(Type modPluginType) => Path.GetDirectoryName(modPluginType.Assembly.Location);
@@ -111,25 +111,22 @@ namespace Digitalroot.Valheim.Common
     [UsedImplicitly]
     public static T GetPrivateField<T>(object instance, string name)
     {
-      FieldInfo var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+      var var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
 
-      if (var == null)
-      {
-        Log.Error(Logger,"Variable " + name + " does not exist on type: " + instance.GetType());
-        return default(T);
-      }
+      if (var != null) return (T)var.GetValue(instance);
+      Log.Error(Logger,"Variable " + name + " does not exist on type: " + instance.GetType());
+      return default;
 
-      return (T) var.GetValue(instance);
     }
 
     [UsedImplicitly]
     public static object InvokePrivate(object instance, string name, object[] args = null)
     {
-      MethodInfo method = instance.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
+      var method = instance.GetType().GetMethod(name, BindingFlags.NonPublic | BindingFlags.Instance);
 
       if (method == null)
       {
-        Type[] types = args == null ? Type.EmptyTypes : args.Select(arg => arg.GetType()).ToArray();
+        var types = args == null ? Type.EmptyTypes : args.Select(arg => arg.GetType()).ToArray();
         method = instance.GetType().GetMethod(name, types);
       }
 
@@ -183,7 +180,7 @@ namespace Digitalroot.Valheim.Common
     [UsedImplicitly]
     public static Vector3 GetStartTemplesPosition()
     {
-      if (ZoneSystem.instance.FindClosestLocation("StartTemple", Vector3.zero, out ZoneSystem.LocationInstance locationInstance))
+      if (ZoneSystem.instance.FindClosestLocation("StartTemple", Vector3.zero, out var locationInstance))
       {
         Log.Trace(Logger, $"[GetStartTemplesPosition] StartTemple at {locationInstance.m_position}");
         return locationInstance.m_position;
@@ -196,7 +193,7 @@ namespace Digitalroot.Valheim.Common
     [UsedImplicitly]
     public static void SetPrivateField(object instance, string name, object value)
     {
-      FieldInfo var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
+      var var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
 
       if (var == null)
       {

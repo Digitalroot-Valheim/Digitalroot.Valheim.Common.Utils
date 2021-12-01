@@ -37,15 +37,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.12" />
-    <PackageReference Include="Digitalroot.Valheim.Common.References" Version="0.204.5" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="ico\ValheimRcon_black.png">
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.Core" Version="5.4.16">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.14">
+      <ExcludeAssets></ExcludeAssets>
+    </PackageReference>
+    <PackageReference Include="Digitalroot.Valheim.Common.References" Version="0.205.6" />
   </ItemGroup>
 
 </Project>
