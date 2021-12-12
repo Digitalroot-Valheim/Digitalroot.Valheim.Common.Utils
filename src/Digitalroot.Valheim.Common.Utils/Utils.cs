@@ -16,11 +16,11 @@ namespace Digitalroot.Valheim.Common
 
     private static ITraceableLogging GetLogger()
     {
-#if DEBUG
+      #if DEBUG
       return new StaticSourceLogger(true);
-#else
+      #else
       return new StaticSourceLogger();
-#endif
+      #endif
     }
 
     [UsedImplicitly]
@@ -38,18 +38,21 @@ namespace Digitalroot.Valheim.Common
     /// <summary>
     /// Does not work in Awake()
     /// </summary>
-    [UsedImplicitly] public static bool IsDedicated => ZNet.instance.IsDedicated();
+    [UsedImplicitly]
+    public static bool IsDedicated => ZNet.instance.IsDedicated();
 
     /// <summary>
     /// Does not work in Awake()
     /// </summary>
-    [UsedImplicitly] public static bool IsServer => ZNet.instance.IsServer();
+    [UsedImplicitly]
+    public static bool IsServer => ZNet.instance.IsServer();
 
     /// <summary>
     /// Works in Awake()
     /// </summary>
-    [UsedImplicitly] public static bool IsHeadless() => SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
-    
+    [UsedImplicitly]
+    public static bool IsHeadless() => SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null;
+
     // ReSharper disable once MemberCanBePrivate.Global
     // ReSharper disable once StringLiteralTypo
     public static bool IsRunningFromNUnit => AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.ToLowerInvariant().StartsWith("nunit.framework"));
@@ -104,7 +107,7 @@ namespace Digitalroot.Valheim.Common
 
     [UsedImplicitly]
     public static GameObject GetPrefab(string itemName) => IsZNetSceneReady() ? ZNetScene.instance.GetPrefab(itemName) : null;
-    
+
     [UsedImplicitly]
     public static GameObject GetPrefab(int hash) => IsZNetSceneReady() ? ZNetScene.instance.GetPrefab(hash) : null;
 
@@ -114,9 +117,8 @@ namespace Digitalroot.Valheim.Common
       var var = instance.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
 
       if (var != null) return (T)var.GetValue(instance);
-      Log.Error(Logger,"Variable " + name + " does not exist on type: " + instance.GetType());
+      Log.Error(Logger, "Variable " + name + " does not exist on type: " + instance.GetType());
       return default;
-
     }
 
     [UsedImplicitly]
@@ -145,28 +147,28 @@ namespace Digitalroot.Valheim.Common
     [UsedImplicitly]
     public static bool IsObjectDBReady()
     {
-      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      // Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       return (GetObjectDB() != null && GetObjectDB().m_items.Count != 0 && GetItemPrefab("Amber") != null) || IsRunningFromNUnit;
     }
 
     [UsedImplicitly]
     public static bool IsPlayerReady()
     {
-      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      // Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       return GetLocalPlayer() != null;
     }
 
     [UsedImplicitly]
     public static bool IsZNetSceneReady()
     {
-      Log.Trace(Logger,$"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      // Log.Trace(Logger,$"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       return ZNetScene.instance != null && ZNetScene.instance?.m_prefabs is { Count: > 0 };
     }
 
     [UsedImplicitly]
     public static bool IsZNetReady()
     {
-      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
+      // Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}");
       // Log.Trace($"ZNet.instance != null : {ZNet.instance != null}");
       return ZNet.instance != null;
     }
@@ -185,6 +187,7 @@ namespace Digitalroot.Valheim.Common
         Log.Trace(Logger, $"[GetStartTemplesPosition] StartTemple at {locationInstance.m_position}");
         return locationInstance.m_position;
       }
+
       Log.Error(Logger, $"[GetStartTemplesPosition] Can't find StartTemple");
 
       return Vector3.zero;
@@ -205,20 +208,24 @@ namespace Digitalroot.Valheim.Common
     }
 
     [UsedImplicitly]
-    public static GameObject Spawn(string prefabName, GameObject prefab, Vector3 location, Transform parent)
+    public static GameObject Spawn([NotNull] string prefabName, Vector3 location, [CanBeNull] Transform parent = null)
     {
-      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefab?.name}, {location}, {parent.name})");
-      if (prefab == null) return null;
-      var instance = UnityEngine.Object.Instantiate(prefab, location, Quaternion.identity, parent);
-      return instance;
+      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefab?.name}, {location}, {parent?.name})");
+      var prefab = ObjectDB.instance.GetItemPrefab(prefabName.GetStableHashCode());
+      return prefab == null ? null : Spawn(prefab, location, parent);
     }
 
     [UsedImplicitly]
-    public static GameObject Spawn(GameObject prefab, Vector3 location, Transform parent)
+    public static GameObject Spawn([NotNull] GameObject prefab, Vector3 location, [CanBeNull] Transform parent = null)
     {
-      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefab.name}, {location}, {parent.name})");
-      var instance = UnityEngine.Object.Instantiate(prefab, location, Quaternion.identity, parent);
-      return instance;
+      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefab.name}, {location}, {parent?.name})");
+
+      if (parent == null)
+      {
+        return UnityEngine.Object.Instantiate(prefab, location, Quaternion.identity);
+      }
+
+      return UnityEngine.Object.Instantiate(prefab, location, Quaternion.identity, parent);
     }
   }
 }
