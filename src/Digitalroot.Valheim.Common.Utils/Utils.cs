@@ -210,7 +210,7 @@ namespace Digitalroot.Valheim.Common
     [UsedImplicitly]
     public static GameObject Spawn([NotNull] string prefabName, Vector3 location, [CanBeNull] Transform parent = null)
     {
-      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefab?.name}, {location}, {parent?.name})");
+      Log.Trace(Logger, $"{Namespace}.{MethodBase.GetCurrentMethod().DeclaringType?.Name}.{MethodBase.GetCurrentMethod().Name}({prefabName}, {location}, {parent?.name})");
       var prefab = ObjectDB.instance.GetItemPrefab(prefabName.GetStableHashCode());
       return prefab == null ? null : Spawn(prefab, location, parent);
     }
