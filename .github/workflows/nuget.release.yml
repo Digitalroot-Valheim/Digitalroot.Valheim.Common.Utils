@@ -24,6 +24,5 @@ jobs:
     with:
       sln-file-name: Digitalroot.Valheim.Common.Utils
       proj-file-name: Digitalroot.Valheim.Common.Utils
-      skip-unit-tests: true
       nuget-gh-upload: true
       nuget-s3-upload: true
