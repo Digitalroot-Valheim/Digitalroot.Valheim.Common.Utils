@@ -8,6 +8,7 @@ using System.Reflection;
 using UnityEngine;
 using UnityEngine.Rendering;
 
+
 namespace Digitalroot.Valheim.Common
 {
   public static class Utils

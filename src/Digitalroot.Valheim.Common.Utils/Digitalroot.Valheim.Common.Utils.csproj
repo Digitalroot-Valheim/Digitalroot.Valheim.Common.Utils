@@ -9,7 +9,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
-    <Copyright>Copyright © Digitalroot Technologies 2021 - 2022</Copyright>
+    <Copyright>Copyright © Digitalroot Technologies 2021 - 2023</Copyright>
     <PackageProjectUrl>https://github.com/Digitalroot-Valheim/Digitalroot.Valheim.Common.Utils</PackageProjectUrl>
     <RepositoryUrl>https://github.com/Digitalroot-Valheim/Digitalroot.Valheim.Common.Utils</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -45,13 +45,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BepInEx.Core" Version="5.4.17">
+    <PackageReference Include="BepInEx.Core" Version="[5.4.19]">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.16">
+    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.27">
       <ExcludeAssets></ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Digitalroot.Valheim.Common.References" Version="0.205.7" />
+    <PackageReference Include="Digitalroot.Valheim.Common.References" Version="0.212.9" />
   </ItemGroup>
 
 </Project>
