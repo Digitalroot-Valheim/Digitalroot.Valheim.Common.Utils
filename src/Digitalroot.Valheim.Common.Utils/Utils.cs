@@ -228,5 +228,36 @@ namespace Digitalroot.Valheim.Common
 
       return UnityEngine.Object.Instantiate(prefab, location, Quaternion.identity, parent);
     }
+
+    /// <summary>
+    ///     Thanks JvL
+    ///     Load an assembly-embedded <see cref="AssetBundle" />. Use this if the automatic detection of the assembly fails.
+    /// </summary>
+    /// <param name="bundleName">Name of the bundle. Folders are point-seperated e.g. folder/bundle becomes folder.bundle</param>
+    /// <param name="resourceAssembly">Executing assembly</param>
+    /// <returns></returns>
+    public static AssetBundle LoadAssetBundleFromResources(string bundleName, Assembly resourceAssembly)
+    {
+      if (resourceAssembly == null)
+      {
+        throw new ArgumentNullException(nameof(resourceAssembly));
+      }
+
+      string resourceName = null;
+      try
+      {
+        resourceName = resourceAssembly.GetManifestResourceNames().Single(str => str.EndsWith(bundleName));
+        // ReSharper disable once EmptyGeneralCatchClause
+      } catch (Exception) { }
+
+      if (resourceName == null)
+      {
+        Log.Error(Logger, $"AssetBundle {bundleName} not found in assembly manifest");
+        return null;
+      }
+
+      using var stream = resourceAssembly.GetManifestResourceStream(resourceName);
+      return AssetBundle.LoadFromStream(stream);
+    }
   }
 }
