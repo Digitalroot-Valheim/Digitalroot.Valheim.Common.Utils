@@ -23,9 +23,9 @@
       },
       "Digitalroot.Valheim.Common.References": {
         "type": "Direct",
-        "requested": "[0.212.14, )",
-        "resolved": "0.212.14",
-        "contentHash": "emcS47E/Z95h0Sg8M7Rg1xhbvpVlqFzmVJPT6mGpjaAdppeSVI46lvH25TO2Iig3lGE5Ye0Gmyrvop0Q/e4rgg=="
+        "requested": "[0.212.15, )",
+        "resolved": "0.212.15",
+        "contentHash": "UhIvrrr3VyhAv1/UuD90HWnuaWxkvkj6h1ide/hhZevlyZMYyRxtRoR+Tj+/o0sAg4skYyTAVgp2Fh5vvt3HDQ=="
       },
       "BepInEx.BaseLib": {
         "type": "Transitive",
