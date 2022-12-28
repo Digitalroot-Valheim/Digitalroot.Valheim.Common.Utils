@@ -24,7 +24,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{AEF35CB5-9
 		..\docs\README.md = ..\docs\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{47AFED77-CCA9-421C-814B-48350756FAD3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{47AFED77-CCA9-421C-814B-48350756FAD3}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0471A9E8-849B-4CF8-9F9C-509A52DFDCDE} = {0471A9E8-849B-4CF8-9F9C-509A52DFDCDE}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
