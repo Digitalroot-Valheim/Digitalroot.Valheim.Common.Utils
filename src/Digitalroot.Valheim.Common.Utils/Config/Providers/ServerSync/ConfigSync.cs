@@ -20,13 +20,13 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
   [PublicAPI]
   public class ConfigSync
   {
-    public static bool ProcessingServerUpdate = false;
+    public static bool ProcessingServerUpdate;
 
     public readonly string Name;
     public string? DisplayName;
     public string? CurrentVersion;
     public string? MinimumRequiredVersion;
-    public bool ModRequired = false;
+    public bool ModRequired;
 
     private bool? forceConfigLocking;
 
@@ -62,9 +62,9 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static bool isServer;
 
-    private static bool lockExempt = false;
+    private static bool lockExempt;
 
-    private OwnConfigEntryBase? lockedConfig = null;
+    private OwnConfigEntryBase? lockedConfig;
     private event Action? lockedConfigChanged;
 
     static ConfigSync()
@@ -79,14 +79,19 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       _ = new VersionCheck(this);
     }
 
+    private static readonly StaticSourceLogger _loggerInstance = StaticSourceLogger.PreMadeTraceableInstance;
+    private static string _namespace = $"Digitalroot.Valheim.Common.Config.Providers.{nameof(ConfigSync)}";
+
     public SyncedConfigEntry<T> AddConfigEntry<T>(ConfigEntry<T> configEntry)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}(Key : {configEntry.Definition.Key}, Section : {configEntry.Definition.Section}, Value : {configEntry.Value}), Description : {configEntry.Description.Description})");
       if (configData(configEntry) is not SyncedConfigEntry<T> syncedEntry)
       {
         syncedEntry = new SyncedConfigEntry<T>(configEntry);
         AccessTools.DeclaredField(typeof(ConfigDescription), "<Tags>k__BackingField").SetValue(configEntry.Description, new object[] { new ConfigurationManagerAttributes() }.Concat(configEntry.Description.Tags ?? Array.Empty<object>()).Concat(new[] { syncedEntry }).ToArray());
         configEntry.SettingChanged += (_, _) =>
                                       {
+                                        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
                                         if (!ProcessingServerUpdate && syncedEntry.SynchronizedConfig)
                                         {
                                           Broadcast(ZRoutedRpc.Everybody, configEntry);
@@ -101,6 +106,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     public SyncedConfigEntry<T> AddLockingConfigEntry<T>(ConfigEntry<T> lockingConfig)
       where T : IConvertible
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}(Key : {lockingConfig.Definition.Key}, Section : {lockingConfig.Definition.Section}, Value : {lockingConfig.Value}), Description : {lockingConfig.Description.Description})");
       if (lockedConfig != null)
       {
         throw new Exception("Cannot initialize locking ConfigEntry twice");
@@ -114,6 +120,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     internal void AddCustomValue(CustomSyncedValueBase customValue)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}(Identifier : {customValue.Identifier}, Value : {customValue.BoxedValue})");
       if (allCustomValues.Select(v => v.Identifier).Concat(new[] { "serverversion" }).Contains(customValue.Identifier))
       {
         throw new Exception("Cannot have multiple settings with the same name or with a reserved name (serverversion)");
@@ -129,7 +136,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
                                   };
     }
 
-    [HarmonyPatch(typeof(ZRpc), "HandlePackage")]
+    [HarmonyPatch(typeof(ZRpc), nameof(ZRpc.HandlePackage))]
     private static class SnatchCurrentlyHandlingRPC
     {
       public static ZRpc? currentRpc;
@@ -138,26 +145,28 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       private static void Prefix(ZRpc __instance) => currentRpc = __instance;
     }
 
-    [HarmonyPatch(typeof(ZNet), "Awake")]
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.Awake))]
     internal static class RegisterRPCPatch
     {
       [HarmonyPostfix]
       private static void Postfix(ZNet __instance)
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+
         isServer = __instance.IsServer();
-        foreach (ConfigSync configSync in configSyncs)
+        foreach (var configSync in configSyncs)
         {
           configSync.IsSourceOfTruth = __instance.IsDedicated() || __instance.IsServer();
           ZRoutedRpc.instance.Register<ZPackage>(configSync.Name + " ConfigSync", configSync.RPC_ConfigSync);
           if (isServer)
           {
-            Debug.Log($"Registered '{configSync.Name} ConfigSync' RPC - waiting for incoming connections");
+            Log.Debug(_loggerInstance, $"Registered '{configSync.Name} ConfigSync' RPC - waiting for incoming connections");
           }
         }
 
         IEnumerator WatchAdminListChanges()
         {
-          SyncedList adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
+          var adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
           List<string> CurrentList = new(adminList.GetList());
           for (;;)
           {
@@ -168,7 +177,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
               void SendAdmin(List<ZNetPeer> peers, bool isAdmin)
               {
-                ZPackage package = ConfigsToPackage(packageEntries: new[]
+                var package = ConfigsToPackage(packageEntries: new[]
                 {
                   new PackageEntry { section = "Internal", key = "lockexempt", type = typeof(bool), value = isAdmin }
                 });
@@ -195,15 +204,16 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       }
     }
 
-    [HarmonyPatch(typeof(ZNet), "OnNewConnection")]
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.OnNewConnection))]
     private static class RegisterClientRPCPatch
     {
       [HarmonyPostfix]
       private static void Postfix(ZNet __instance, ZNetPeer peer)
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
         if (!__instance.IsServer())
         {
-          foreach (ConfigSync configSync in configSyncs)
+          foreach (var configSync in configSyncs)
           {
             peer.m_rpc.Register<ZPackage>(configSync.Name + " ConfigSync", configSync.RPC_InitialConfigSync);
           }
@@ -224,9 +234,10 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     {
       try
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
         if (isServer && IsLocked)
         {
-          bool? exempt = ((SyncedList?)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance))?.Contains(SnatchCurrentlyHandlingRPC.currentRpc?.GetSocket()?.GetHostName());
+          var exempt = ((SyncedList?)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance))?.Contains(SnatchCurrentlyHandlingRPC.currentRpc?.GetSocket()?.GetHostName());
           if (exempt == false)
           {
             return;
@@ -244,12 +255,12 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
                                      return false;
                                    });
 
-        byte packageFlags = package.ReadByte();
+        var packageFlags = package.ReadByte();
 
         if ((packageFlags & FRAGMENTED_CONFIG) != 0)
         {
-          long uniqueIdentifier = package.ReadLong();
-          string cacheKey = sender.ToString() + uniqueIdentifier;
+          var uniqueIdentifier = package.ReadLong();
+          var cacheKey = sender.ToString() + uniqueIdentifier;
           if (!configValueCache.TryGetValue(cacheKey, out SortedDictionary<int, byte[]> dataFragments))
           {
             dataFragments = new SortedDictionary<int, byte[]>();
@@ -257,8 +268,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
             cacheExpirations.Add(new KeyValuePair<long, string>(DateTimeOffset.Now.AddSeconds(60).Ticks, cacheKey));
           }
 
-          int fragment = package.ReadInt();
-          int fragments = package.ReadInt();
+          var fragment = package.ReadInt();
+          var fragments = package.ReadInt();
 
           dataFragments.Add(fragment, package.ReadByteArray());
 
@@ -277,7 +288,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
         if ((packageFlags & COMPRESSED_CONFIG) != 0)
         {
-          byte[] data = package.ReadByteArray();
+          var data = package.ReadByteArray();
 
           MemoryStream input = new(data);
           MemoryStream output = new();
@@ -305,7 +316,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
           IsSourceOfTruth = false;
         }
 
-        ParsedConfigs configs = ReadConfigsFromPackage(package);
+        var configs = ReadConfigsFromPackage(package);
 
         foreach (KeyValuePair<OwnConfigEntryBase, object?> configKv in configs.configValues)
         {
@@ -329,7 +340,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
         if (!isServer)
         {
-          Debug.Log($"Received {configs.configValues.Count} configs and {configs.customValues.Count} custom values from the server for mod {DisplayName ?? Name}");
+          Log.Debug(_loggerInstance, $"Received {configs.configValues.Count} configs and {configs.customValues.Count} custom values from the server for mod {DisplayName ?? Name}");
 
           serverLockedSettingChanged(); // Re-evaluate for intial locking
         }
@@ -348,19 +359,20 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private ParsedConfigs ReadConfigsFromPackage(ZPackage package)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       ParsedConfigs configs = new();
-      Dictionary<string, OwnConfigEntryBase> configMap = allConfigs.Where(c => c.SynchronizedConfig).ToDictionary(c => c.BaseConfig.Definition.Section + "_" + c.BaseConfig.Definition.Key, c => c);
+      var configMap = allConfigs.Where(c => c.SynchronizedConfig).ToDictionary(c => c.BaseConfig.Definition.Section + "_" + c.BaseConfig.Definition.Key, c => c);
 
       Dictionary<string, CustomSyncedValueBase> customValueMap = allCustomValues.ToDictionary(c => c.Identifier, c => c);
 
-      int valueCount = package.ReadInt();
-      for (int i = 0; i < valueCount; ++i)
+      var valueCount = package.ReadInt();
+      for (var i = 0; i < valueCount; ++i)
       {
-        string groupName = package.ReadString();
-        string configName = package.ReadString();
-        string typeName = package.ReadString();
+        var groupName = package.ReadString();
+        var configName = package.ReadString();
+        var typeName = package.ReadString();
 
-        Type? type = Type.GetType(typeName);
+        var type = Type.GetType(typeName);
         if (typeName == "" || type != null)
         {
           object? value;
@@ -370,7 +382,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
           }
           catch (InvalidDeserializationTypeException e)
           {
-            Debug.LogWarning($"Got unexpected struct internal type {e.received} for field {e.field} struct {typeName} for {configName} in section {groupName} for mod {DisplayName ?? Name}, expecting {e.expected}");
+            Log.Warning(_loggerInstance, $"Got unexpected struct internal type {e.received} for field {e.field} struct {typeName} for {configName} in section {groupName} for mod {DisplayName ?? Name}, expecting {e.expected}");
             continue;
           }
 
@@ -380,7 +392,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
             {
               if (value?.ToString() != CurrentVersion)
               {
-                Debug.LogWarning($"Received server version is not equal: server version = {value?.ToString() ?? "null"}; local version = {CurrentVersion ?? "unknown"}");
+                Log.Warning(_loggerInstance, $"Received server version is not equal: server version = {value?.ToString() ?? "null"}; local version = {CurrentVersion ?? "unknown"}");
               }
             }
             else if (configName == "lockexempt")
@@ -390,7 +402,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
                 lockExempt = exempt;
               }
             }
-            else if (customValueMap.TryGetValue(configName, out CustomSyncedValueBase config))
+            else if (customValueMap.TryGetValue(configName, out var config))
             {
               if ((typeName == "" && (!config.Type.IsValueType || Nullable.GetUnderlyingType(config.Type) != null)) || GetZPackageTypeString(config.Type) == typeName)
               {
@@ -398,30 +410,30 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
               }
               else
               {
-                Debug.LogWarning($"Got unexpected type {typeName} for internal value {configName} for mod {DisplayName ?? Name}, expecting {config.Type.AssemblyQualifiedName}");
+                Log.Warning(_loggerInstance, $"Got unexpected type {typeName} for internal value {configName} for mod {DisplayName ?? Name}, expecting {config.Type.AssemblyQualifiedName}");
               }
             }
           }
-          else if (configMap.TryGetValue(groupName + "_" + configName, out OwnConfigEntryBase config))
+          else if (configMap.TryGetValue(groupName + "_" + configName, out var config))
           {
-            Type expectedType = configType(config.BaseConfig);
+            var expectedType = configType(config.BaseConfig);
             if ((typeName == "" && (!expectedType.IsValueType || Nullable.GetUnderlyingType(expectedType) != null)) || GetZPackageTypeString(expectedType) == typeName)
             {
               configs.configValues[config] = value;
             }
             else
             {
-              Debug.LogWarning($"Got unexpected type {typeName} for {configName} in section {groupName} for mod {DisplayName ?? Name}, expecting {expectedType.AssemblyQualifiedName}");
+              Log.Warning(_loggerInstance, $"Got unexpected type {typeName} for {configName} in section {groupName} for mod {DisplayName ?? Name}, expecting {expectedType.AssemblyQualifiedName}");
             }
           }
           else
           {
-            Debug.LogWarning($"Received unknown config entry {configName} in section {groupName} for mod {DisplayName ?? Name}. This may happen if client and server versions of the mod do not match.");
+            Log.Warning(_loggerInstance, $"Received unknown config entry {configName} in section {groupName} for mod {DisplayName ?? Name}. This may happen if client and server versions of the mod do not match.");
           }
         }
         else
         {
-          Debug.LogWarning($"Got invalid type {typeName}, abort reading of received configs");
+          Log.Warning(_loggerInstance, $"Got invalid type {typeName}, abort reading of received configs");
           return new ParsedConfigs();
         }
       }
@@ -429,14 +441,15 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       return configs;
     }
 
-    [HarmonyPatch(typeof(ZNet), "Shutdown")]
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.Shutdown))]
     private class ResetConfigsOnShutdown
     {
       [HarmonyPostfix]
       private static void Postfix()
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
         ProcessingServerUpdate = true;
-        foreach (ConfigSync serverSync in configSyncs)
+        foreach (var serverSync in configSyncs)
         {
           serverSync.resetConfigsFromServer();
         }
@@ -447,6 +460,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static bool isWritableConfig(OwnConfigEntryBase config)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (configSyncs.FirstOrDefault(cs => cs.allConfigs.Contains(config)) is not { } configSync)
       {
         return true;
@@ -457,7 +471,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private void serverLockedSettingChanged()
     {
-      foreach (OwnConfigEntryBase configEntryBase in allConfigs)
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      foreach (var configEntryBase in allConfigs)
       {
         configAttribute<ConfigurationManagerAttributes>(configEntryBase.BaseConfig).ReadOnly = !isWritableConfig(configEntryBase);
       }
@@ -465,13 +480,14 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private void resetConfigsFromServer()
     {
-      foreach (OwnConfigEntryBase config in allConfigs.Where(config => config.LocalBaseValue != null))
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      foreach (var config in allConfigs.Where(config => config.LocalBaseValue != null))
       {
         config.BaseConfig.BoxedValue = config.LocalBaseValue;
         config.LocalBaseValue = null;
       }
 
-      foreach (CustomSyncedValueBase config in allCustomValues.Where(config => config.LocalBaseValue != null))
+      foreach (var config in allCustomValues.Where(config => config.LocalBaseValue != null))
       {
         config.BoxedValue = config.LocalBaseValue;
         config.LocalBaseValue = null;
@@ -482,7 +498,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       serverLockedSettingChanged();
     }
 
-    private static long packageCounter = 0;
+    private static long packageCounter;
 
     private IEnumerator<bool> distributeConfigToPeers(ZNetPeer peer, ZPackage package)
     {
@@ -496,12 +512,13 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
       IEnumerable<bool> waitForQueue()
       {
-        float timeout = Time.time + 30;
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+        var timeout = Time.time + 30;
         while (peer.m_socket.GetSendQueueSize() > maximumSendQueueSize)
         {
           if (Time.time > timeout)
           {
-            Debug.Log($"Disconnecting {peer.m_uid} after 30 seconds config sending timeout");
+            Log.Debug(_loggerInstance, $"Disconnecting {peer.m_uid} after 30 seconds config sending timeout");
             peer.m_rpc.Invoke("Error", ZNet.ConnectionStatus.ErrorConnectFailed);
             ZNet.instance.Disconnect(peer);
             yield break;
@@ -513,7 +530,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
       void SendPackage(ZPackage pkg)
       {
-        string method = Name + " ConfigSync";
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+        var method = Name + " ConfigSync";
         if (isServer)
         {
           peer.m_rpc.Invoke(method, pkg);
@@ -526,11 +544,11 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
       if (package.GetArray() is { LongLength: > packageSliceSize } data)
       {
-        int fragments = (int)(1 + (data.LongLength - 1) / packageSliceSize);
-        long packageIdentifier = ++packageCounter;
-        for (int fragment = 0; fragment < fragments; ++fragment)
+        var fragments = (int)(1 + (data.LongLength - 1) / packageSliceSize);
+        var packageIdentifier = ++packageCounter;
+        for (var fragment = 0; fragment < fragments; ++fragment)
         {
-          foreach (bool wait in waitForQueue())
+          foreach (var wait in waitForQueue())
           {
             yield return wait;
           }
@@ -556,7 +574,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       }
       else
       {
-        foreach (bool wait in waitForQueue())
+        foreach (var wait in waitForQueue())
         {
           yield return wait;
         }
@@ -567,12 +585,13 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private IEnumerator sendZPackage(long target, ZPackage package)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (!ZNet.instance)
       {
         return Enumerable.Empty<object>().GetEnumerator();
       }
 
-      List<ZNetPeer> peers = (List<ZNetPeer>)AccessTools.DeclaredField(typeof(ZRoutedRpc), "m_peers").GetValue(ZRoutedRpc.instance);
+      var peers = (List<ZNetPeer>)AccessTools.DeclaredField(typeof(ZRoutedRpc), "m_peers").GetValue(ZRoutedRpc.instance);
       if (target != ZRoutedRpc.Everybody)
       {
         peers = peers.Where(p => p.m_uid == target).ToList();
@@ -583,6 +602,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private IEnumerator sendZPackage(List<ZNetPeer> peers, ZPackage package)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (!ZNet.instance)
       {
         yield break;
@@ -604,7 +624,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         package = compressedPackage;
       }
 
-      List<IEnumerator<bool>> writers = peers.Where(peer => peer.IsReady()).Select(p => distributeConfigToPeers(p, package)).ToList();
+      var writers = peers.Where(peer => peer.IsReady()).Select(p => distributeConfigToPeers(p, package)).ToList();
       writers.RemoveAll(writer => !writer.MoveNext());
       while (writers.Count > 0)
       {
@@ -618,7 +638,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     {
       private class BufferingSocket : ISocket
       {
-        public volatile bool finished = false;
+        public volatile bool finished;
         public volatile int versionMatchQueued = -1;
         public readonly List<ZPackage> Package = new();
         public readonly ISocket Original;
@@ -646,6 +666,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
         public void VersionMatch()
         {
+          Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
           if (finished)
           {
             Original.VersionMatch();
@@ -658,9 +679,10 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
         public void Send(ZPackage pkg)
         {
-          int oldPos = pkg.GetPos();
+          Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+          var oldPos = pkg.GetPos();
           pkg.SetPos(0);
-          int methodHash = pkg.ReadInt();
+          var methodHash = pkg.ReadInt();
           if ((methodHash == "PeerInfo".GetStableHashCode() || methodHash == "RoutedRPC".GetStableHashCode() || methodHash == "ZDOData".GetStableHashCode()) && !finished)
           {
             ZPackage newPkg = new(pkg.GetArray());
@@ -679,6 +701,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       [HarmonyPrefix]
       private static void Prefix(ref Dictionary<Assembly, BufferingSocket>? __state, ZNet __instance, ZRpc rpc)
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
         if (__instance.IsServer())
         {
           BufferingSocket bufferingSocket = new(rpc.GetSocket());
@@ -697,6 +720,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       [HarmonyPostfix]
       private static void Postfix(Dictionary<Assembly, BufferingSocket> __state, ZNet __instance, ZRpc rpc)
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
         if (!__instance.IsServer())
         {
           return;
@@ -716,7 +740,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
           bufferingSocket = __state[Assembly.GetExecutingAssembly()];
           bufferingSocket.finished = true;
 
-          for (int i = 0; i < bufferingSocket.Package.Count; ++i)
+          for (var i = 0; i < bufferingSocket.Package.Count; ++i)
           {
             if (i == bufferingSocket.versionMatchQueued)
             {
@@ -740,7 +764,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
         IEnumerator sendAsync()
         {
-          foreach (ConfigSync configSync in configSyncs)
+          foreach (var configSync in configSyncs)
           {
             List<PackageEntry> entries = new();
             if (configSync.CurrentVersion != null)
@@ -748,11 +772,11 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
               entries.Add(new PackageEntry { section = "Internal", key = "serverversion", type = typeof(string), value = configSync.CurrentVersion });
             }
 
-            MethodInfo? listContainsId = AccessTools.DeclaredMethod(typeof(ZNet), "ListContainsId");
-            SyncedList adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
+            var listContainsId = AccessTools.DeclaredMethod(typeof(ZNet), "ListContainsId");
+            var adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), "m_adminList").GetValue(ZNet.instance);
             entries.Add(new PackageEntry { section = "Internal", key = "lockexempt", type = typeof(bool), value = listContainsId is null ? adminList.Contains(rpc.GetSocket().GetHostName()) : listContainsId.Invoke(ZNet.instance, new object[] { adminList, rpc.GetSocket().GetHostName() }) });
 
-            ZPackage package = ConfigsToPackage(configSync.allConfigs.Select(c => c.BaseConfig), configSync.allCustomValues, entries, false);
+            var package = ConfigsToPackage(configSync.allConfigs.Select(c => c.BaseConfig), configSync.allCustomValues, entries, false);
 
             yield return __instance.StartCoroutine(configSync.sendZPackage(new List<ZNetPeer> { peer }, package));
           }
@@ -774,18 +798,20 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private void Broadcast(long target, params ConfigEntryBase[] configs)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (!IsLocked || isServer)
       {
-        ZPackage package = ConfigsToPackage(configs);
+        var package = ConfigsToPackage(configs);
         ZNet.instance?.StartCoroutine(sendZPackage(target, package));
       }
     }
 
     private void Broadcast(long target, params CustomSyncedValueBase[] customValues)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (!IsLocked || isServer)
       {
-        ZPackage package = ConfigsToPackage(customValues: customValues);
+        var package = ConfigsToPackage(customValues: customValues);
         ZNet.instance?.StartCoroutine(sendZPackage(target, package));
       }
     }
@@ -815,6 +841,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       [HarmonyPrefix]
       private static bool Prefix(ConfigEntryBase __instance, ref string __result)
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
         if (configData(__instance) is not { } data || isWritableConfig(data))
         {
           return true;
@@ -831,6 +858,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       [HarmonyPrefix]
       private static bool Prefix(ConfigEntryBase __instance, string value)
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
         if (configData(__instance) is not { } data || data.LocalBaseValue == null)
         {
           return true;
@@ -842,7 +870,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         }
         catch (Exception e)
         {
-          Debug.LogWarning($"Config value of setting \"{__instance.Definition}\" could not be parsed and will be ignored. Reason: {e.Message}; Value: {value}");
+          Log.Warning(_loggerInstance, $"Config value of setting \"{__instance.Definition}\" could not be parsed and will be ignored. Reason: {e.Message}; Value: {value}");
         }
 
         return false;
@@ -851,22 +879,23 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static ZPackage ConfigsToPackage(IEnumerable<ConfigEntryBase>? configs = null, IEnumerable<CustomSyncedValueBase>? customValues = null, IEnumerable<PackageEntry>? packageEntries = null, bool partial = true)
     {
-      List<ConfigEntryBase> configList = configs?.Where(config => configData(config)!.SynchronizedConfig).ToList() ?? new List<ConfigEntryBase>();
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      var configList = configs?.Where(config => configData(config)!.SynchronizedConfig).ToList() ?? new List<ConfigEntryBase>();
       List<CustomSyncedValueBase> customValueList = customValues?.ToList() ?? new List<CustomSyncedValueBase>();
       ZPackage package = new();
       package.Write(partial ? PARTIAL_CONFIGS : (byte)0);
       package.Write(configList.Count + customValueList.Count + (packageEntries?.Count() ?? 0));
-      foreach (PackageEntry packageEntry in packageEntries ?? Array.Empty<PackageEntry>())
+      foreach (var packageEntry in packageEntries ?? Array.Empty<PackageEntry>())
       {
         AddEntryToPackage(package, packageEntry);
       }
 
-      foreach (CustomSyncedValueBase customValue in customValueList)
+      foreach (var customValue in customValueList)
       {
         AddEntryToPackage(package, new PackageEntry { section = "Internal", key = customValue.Identifier, type = customValue.Type, value = customValue.BoxedValue });
       }
 
-      foreach (ConfigEntryBase config in configList)
+      foreach (var config in configList)
       {
         AddEntryToPackage(package, new PackageEntry { section = config.Definition.Section, key = config.Definition.Key, type = configType(config), value = config.BoxedValue });
       }
@@ -876,6 +905,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static void AddEntryToPackage(ZPackage package, PackageEntry entry)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       package.Write(entry.section);
       package.Write(entry.key);
       package.Write(entry.value == null ? "" : GetZPackageTypeString(entry.type));
@@ -886,7 +916,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static void AddValueToZPackage(ZPackage package, object? value)
     {
-      Type? type = value?.GetType();
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      var type = value?.GetType();
       if (value is Enum)
       {
         value = ((IConvertible)value).ToType(Enum.GetUnderlyingType(value.GetType()), CultureInfo.InvariantCulture);
@@ -894,7 +925,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       else if (value is ICollection collection)
       {
         package.Write(collection.Count);
-        foreach (object item in collection)
+        foreach (var item in collection)
         {
           AddValueToZPackage(package, item);
         }
@@ -905,7 +936,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       {
         FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         package.Write(fields.Length);
-        foreach (FieldInfo field in fields)
+        foreach (var field in fields)
         {
           package.Write(GetZPackageTypeString(field.FieldType));
           AddValueToZPackage(package, field.GetValue(value));
@@ -919,19 +950,20 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static object ReadValueWithTypeFromZPackage(ZPackage package, Type type)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (type is { IsValueType: true, IsPrimitive: false, IsEnum: false })
       {
-        FieldInfo[] fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        int fieldCount = package.ReadInt();
+        var fields = type.GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        var fieldCount = package.ReadInt();
         if (fieldCount != fields.Length)
         {
           throw new InvalidDeserializationTypeException { received = $"(field count: {fieldCount})", expected = $"(field count: {fields.Length})" };
         }
 
-        object value = FormatterServices.GetUninitializedObject(type);
-        foreach (FieldInfo field in fields)
+        var value = FormatterServices.GetUninitializedObject(type);
+        foreach (var field in fields)
         {
-          string typeName = package.ReadString();
+          var typeName = package.ReadString();
           if (typeName != GetZPackageTypeString(field.FieldType))
           {
             throw new InvalidDeserializationTypeException { received = typeName, expected = GetZPackageTypeString(field.FieldType), field = field.Name };
@@ -945,14 +977,14 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
       if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>))
       {
-        int entriesCount = package.ReadInt();
-        IDictionary dict = (IDictionary)Activator.CreateInstance(type);
-        Type kvType = typeof(KeyValuePair<,>).MakeGenericType(type.GenericTypeArguments);
-        FieldInfo keyField = kvType.GetField("key", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        FieldInfo valueField = kvType.GetField("value", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        for (int i = 0; i < entriesCount; ++i)
+        var entriesCount = package.ReadInt();
+        var dict = (IDictionary)Activator.CreateInstance(type);
+        var kvType = typeof(KeyValuePair<,>).MakeGenericType(type.GenericTypeArguments);
+        var keyField = kvType.GetField("key", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        var valueField = kvType.GetField("value", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        for (var i = 0; i < entriesCount; ++i)
         {
-          object kv = ReadValueWithTypeFromZPackage(package, kvType);
+          var kv = ReadValueWithTypeFromZPackage(package, kvType);
           dict.Add(keyField.GetValue(kv), valueField.GetValue(kv));
         }
 
@@ -961,10 +993,10 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
       if (type != typeof(List<string>) && type.IsGenericType && typeof(ICollection<>).MakeGenericType(type.GenericTypeArguments[0]) is { } collectionType && collectionType.IsAssignableFrom(type.GetGenericTypeDefinition()))
       {
-        int entriesCount = package.ReadInt();
-        object list = Activator.CreateInstance(type);
-        MethodInfo adder = collectionType.GetMethod("Add")!;
-        for (int i = 0; i < entriesCount; ++i)
+        var entriesCount = package.ReadInt();
+        var list = Activator.CreateInstance(type);
+        var adder = collectionType.GetMethod("Add")!;
+        for (var i = 0; i < entriesCount; ++i)
         {
           adder.Invoke(list, new[] { ReadValueWithTypeFromZPackage(package, type.GenericTypeArguments[0]) });
         }
@@ -972,7 +1004,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         return list;
       }
 
-      ParameterInfo param = (ParameterInfo)FormatterServices.GetUninitializedObject(typeof(ParameterInfo));
+      var param = (ParameterInfo)FormatterServices.GetUninitializedObject(typeof(ParameterInfo));
       AccessTools.DeclaredField(typeof(ParameterInfo), "ClassImpl").SetValue(param, type);
       List<object> data = new();
       ZRpc.Deserialize(new[] { null, param }, package, ref data);

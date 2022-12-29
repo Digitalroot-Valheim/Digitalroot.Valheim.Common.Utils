@@ -1,4 +1,10 @@
-﻿namespace Digitalroot.Valheim.Common.Config
+﻿using BepInEx.Configuration;
+using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+
+namespace Digitalroot.Valheim.Common.Config
 {
   /// <summary>
   /// Class that specifies how a setting should be displayed inside the ConfigurationManager settings window.
@@ -26,7 +32,7 @@
   /// You can read more and see examples in the readme at https://github.com/BepInEx/BepInEx.ConfigurationManager
   /// You can optionally remove fields that you won't use from this class, it's the same as leaving them null.
   /// </remarks>
-#pragma warning disable 0169, 0414, 0649
+  #pragma warning disable 0169, 0414, 0649
   public sealed class ConfigurationManagerAttributes
   {
     /// <summary>
@@ -38,7 +44,7 @@
     /// Custom setting editor (OnGUI code that replaces the default editor provided by ConfigurationManager).
     /// See below for a deeper explanation. Using a custom drawer will cause many of the other fields to do nothing.
     /// </summary>
-    public System.Action<BepInEx.Configuration.ConfigEntryBase> CustomDrawer;
+    public Action<ConfigEntryBase> CustomDrawer;
 
     /// <summary>
     /// Show this setting in the settings screen at all? If false, don't show.
@@ -94,13 +100,163 @@
     public bool? IsAdvanced;
 
     /// <summary>
+    ///     Whether a config is only writable by admins and gets overwritten on connecting clients
+    /// </summary>
+    public bool IsAdminOnly
+    {
+      get => _isAdminOnly;
+      set
+      {
+        _isAdminOnly = value;
+        IsUnlocked = !value;
+      }
+    }
+
+    private bool _isAdminOnly;
+
+    /// <summary>
+    ///     Whether a config is locked for direct writing
+    /// </summary>
+    public bool IsUnlocked
+    {
+      get => isUnlocked;
+      internal set
+      {
+        ReadOnly = !value;
+        HideDefaultButton = !value;
+        isUnlocked = value;
+      }
+    }
+
+    private bool isUnlocked;
+
+    /// <summary>
+    ///     When a config is locked, cache the local value
+    /// </summary>
+    internal object LocalValue { get; set; }
+
+    /// <summary>
     /// Custom converter from setting type to string for the built-in editor textboxes.
     /// </summary>
-    public System.Func<object, string> ObjToStr;
+    public Func<object, string> ObjToStr;
 
     /// <summary>
     /// Custom converter from string to setting type for the built-in editor textboxes.
     /// </summary>
-    public System.Func<string, object> StrToObj;
+    public Func<string, object> StrToObj;
+
+    private static readonly PropertyInfo[] _myProperties = typeof(ConfigurationManagerAttributes).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+    private static readonly FieldInfo[] _myFields = typeof(ConfigurationManagerAttributes).GetFields(BindingFlags.Instance | BindingFlags.Public);
+    private static readonly StaticSourceLogger _loggerInstance = StaticSourceLogger.PreMadeTraceableInstance;
+    private static string _namespace = $"Digitalroot.Valheim.Common.Config.{nameof(ConfigurationManagerAttributes)}";
+
+    /// <summary>
+    ///     Set config values from an attribute array
+    /// </summary>
+    /// <param name="attribs">Array of attribute values</param>
+    public void SetFromAttributes(object[] attribs)
+    {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      if (attribs == null || attribs.Length == 0)
+      {
+        return;
+      }
+
+      foreach (var attrib in attribs)
+      {
+        switch (attrib)
+        {
+          case null:
+            break;
+
+          case DisplayNameAttribute da:
+            //DispName = da.DisplayName;
+            break;
+
+          case CategoryAttribute ca:
+            //Category = ca.Category;
+            break;
+
+          case DescriptionAttribute de:
+            //Description = de.Description;
+            break;
+
+          case DefaultValueAttribute def:
+            DefaultValue = def.Value;
+            break;
+
+          case ReadOnlyAttribute ro:
+            ReadOnly = ro.IsReadOnly;
+            break;
+
+          case BrowsableAttribute bro:
+            Browsable = bro.Browsable;
+            break;
+
+          // case Action<BepInEx.Configuration.ConfigEntryBase> newCustomDraw:
+          // CustomDrawer = _ => newCustomDraw(this);
+          // break;
+          case string str:
+            switch (str)
+            {
+              case "ReadOnly":
+                ReadOnly = true;
+                break;
+
+              case "Browsable":
+                Browsable = true;
+                break;
+
+              case "Unbrowsable":
+              case "Hidden":
+                Browsable = false;
+                break;
+
+              case "Advanced":
+                IsAdvanced = true;
+                break;
+            }
+
+            break;
+
+          // Copy attributes from a specially formatted object, currently recommended
+          default:
+            var attrType = attrib.GetType();
+            if (attrType.Name == "ConfigurationManagerAttributes")
+            {
+              var otherFields = attrType.GetFields(BindingFlags.Instance | BindingFlags.Public);
+              foreach (var propertyPair in _myProperties.Join(otherFields, my => my.Name, other => other.Name, (my, other) => new { my, other }))
+              {
+                try
+                {
+                  var val = propertyPair.other.GetValue(attrib);
+                  if (val != null) propertyPair.my.SetValue(this, val, null);
+                }
+                catch (Exception ex)
+                {
+                  Log.Warning(_loggerInstance, $"Failed to copy value {propertyPair.my.Name} from provided tag object {attrType.FullName} - " + ex.Message);
+                }
+              }
+
+              foreach (var propertyPair in _myFields.Join(otherFields, my => my.Name, other => other.Name, (my, other) => new { my, other }))
+              {
+                try
+                {
+                  var val = propertyPair.other.GetValue(attrib);
+                  if (val != null) propertyPair.my.SetValue(this, val);
+                }
+                catch (Exception ex)
+                {
+                  Log.Warning(_loggerInstance, $"Failed to copy value {propertyPair.my.Name} from provided tag object {attrType.FullName} - " + ex.Message);
+                }
+              }
+
+              break;
+            }
+
+            return;
+        }
+      }
+    }
   }
 }

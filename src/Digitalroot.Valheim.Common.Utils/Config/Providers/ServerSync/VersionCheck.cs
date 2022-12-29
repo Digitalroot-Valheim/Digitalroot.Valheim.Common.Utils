@@ -23,6 +23,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
   [HarmonyPatch]
   public class VersionCheck
   {
+    private static readonly StaticSourceLogger _loggerInstance = StaticSourceLogger.PreMadeTraceableInstance;
+    private static string _namespace = $"Digitalroot.Valheim.Common.Config.Providers.ServerSync.{nameof(VersionCheck)}";
     private static readonly HashSet<VersionCheck> versionChecks = new();
     private static readonly Dictionary<string, string> notProcessedNames = new();
 
@@ -66,6 +68,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static void PatchServerSync()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), "Awake"))?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch)) > 0)
       {
         return;
@@ -99,6 +102,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     public void Initialize()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       ReceivedCurrentVersion = null;
       ReceivedMinimumRequiredVersion = null;
       if (ConfigSync == null)
@@ -115,6 +119,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private bool IsVersionOk()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (ReceivedMinimumRequiredVersion == null || ReceivedCurrentVersion == null)
       {
         return !ModRequired;
@@ -127,6 +132,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private string ErrorClient()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (ReceivedMinimumRequiredVersion == null)
       {
         return $"Mod {DisplayName} must not be installed.";
@@ -138,32 +144,38 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private string ErrorServer(ZRpc rpc)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       return $"Disconnect: The client ({rpc.GetSocket().GetHostName()}) doesn't have the correct {DisplayName} version {MinimumRequiredVersion}";
     }
 
     private string Error(ZRpc? rpc = null)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       return rpc == null ? ErrorClient() : ErrorServer(rpc);
     }
 
     private static VersionCheck[] GetFailedClient()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       return versionChecks.Where(check => !check.IsVersionOk()).ToArray();
     }
 
     private static VersionCheck[] GetFailedServer(ZRpc rpc)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       return versionChecks.Where(check => check.ModRequired && !check.ValidatedClients.Contains(rpc)).ToArray();
     }
 
     private static void Logout()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       Game.instance.Logout();
       AccessTools.DeclaredField(typeof(ZNet), "m_connectionStatus").SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
     }
 
     private static void DisconnectClient(ZRpc rpc)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       rpc.Invoke("Error", (int)ZNet.ConnectionStatus.ErrorVersion);
     }
 
@@ -171,6 +183,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static void CheckVersion(ZRpc rpc, ZPackage pkg, Action<ZRpc, ZPackage>? original)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       string guid = pkg.ReadString();
       string minimumRequiredVersion = pkg.ReadString();
       string currentVersion = pkg.ReadString();
@@ -210,9 +223,10 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       }
     }
 
-    [HarmonyPatch(typeof(ZNet), "RPC_PeerInfo"), HarmonyPrefix]
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.RPC_PeerInfo)), HarmonyPrefix]
     private static bool RPC_PeerInfo(ZRpc rpc, ZNet __instance)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       VersionCheck[] failedChecks = __instance.IsServer() ? GetFailedServer(rpc) : GetFailedClient();
       if (failedChecks.Length == 0)
       {
@@ -236,9 +250,10 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       return false;
     }
 
-    [HarmonyPatch(typeof(ZNet), "OnNewConnection"), HarmonyPrefix]
+    [HarmonyPatch(typeof(ZNet), nameof(ZNet.OnNewConnection)), HarmonyPrefix]
     private static void RegisterAndCheckVersion(ZNetPeer peer, ZNet __instance)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       notProcessedNames.Clear();
 
       IDictionary rpcFunctions = (IDictionary)typeof(ZRpc).GetField("m_functions", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(peer.m_rpc);
@@ -275,6 +290,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.Disconnect)), HarmonyPrefix]
     private static void RemoveDisconnected(ZNetPeer peer, ZNet __instance)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (!__instance.IsServer())
       {
         return;
@@ -286,9 +302,10 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       }
     }
 
-    [HarmonyPatch(typeof(FejdStartup), "ShowConnectError"), HarmonyPostfix]
+    [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.ShowConnectError)), HarmonyPostfix]
     private static void ShowConnectionError(FejdStartup __instance)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       if (!__instance.m_connectionFailedPanel.activeSelf || ZNet.GetConnectionStatus() != ZNet.ConnectionStatus.ErrorVersion)
       {
         return;

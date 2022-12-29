@@ -4,7 +4,7 @@ using System;
 
 namespace Digitalroot.Valheim.Common.Config
 {
-  public class ConfigProviderFactory
+  public static class ConfigProviderFactory
   {
     public static AbstractConfigProvider GetConfigProvider(ConfigProviderType configProviderType, ConfigProviderSettings configProviderSettings)
     {

@@ -1,5 +1,6 @@
 ﻿using BepInEx.Configuration;
 using Digitalroot.Valheim.Common.Config.Providers.ServerSync;
+using System.Reflection;
 
 namespace Digitalroot.Valheim.Common.Config.Providers
 {
@@ -7,16 +8,19 @@ namespace Digitalroot.Valheim.Common.Config.Providers
   {
     private readonly ConfigSync _serverSyncConfigProvider;
     private readonly ConfigProviderSettings _configProviderSettings;
+    private static readonly StaticSourceLogger _loggerInstance = StaticSourceLogger.PreMadeTraceableInstance;
+    private static string _namespace = $"Digitalroot.Valheim.Common.Config.Providers.{nameof(ServerSyncConfigProvider)}";
 
     public ServerSyncConfigProvider(ConfigProviderSettings configProviderSettings)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       _configProviderSettings = configProviderSettings;
       _serverSyncConfigProvider = new ConfigSync(_configProviderSettings.ModGuid)
       {
         CurrentVersion = _configProviderSettings.ModVersion
         , DisplayName = _configProviderSettings.ModName
         , IsLocked = _configProviderSettings.IsAdminOnly
-        , MinimumRequiredVersion = _configProviderSettings.ModVersion
+        , MinimumRequiredVersion = _configProviderSettings.MinModVersion
         , ModRequired = _configProviderSettings.ModRequired
       };
 
@@ -38,8 +42,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers
 
     private ConfigEntry<T> SyncedConfig<T>(string group, string configName, T value, ConfigDescription description, bool synchronizedSetting = true)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       var configEntry = _configProviderSettings.Plugin.Config.Bind(group, configName, value, description);
-
       var syncedConfigEntry = _serverSyncConfigProvider.AddConfigEntry(configEntry);
       syncedConfigEntry.SynchronizedConfig = synchronizedSetting;
 
@@ -57,6 +61,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers
     /// <inheritdoc />
     public override ConfigEntry<T> AddConfigEntry<T>(ConfigEntry<T> configEntry)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       var syncedConfigEntry = _serverSyncConfigProvider.AddConfigEntry(configEntry);
       syncedConfigEntry.SynchronizedConfig = _configProviderSettings.IsAdminOnly;
       return configEntry;
@@ -65,6 +70,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers
     /// <inheritdoc />
     public override AbstractProxyCustomSyncedValue<T> AddCustomSyncedValue<T>(string identifier, T value = default)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       var customSyncedValue = new CustomSyncedValue<T>(_serverSyncConfigProvider, identifier, value);
       return new ServerSyncProxyCustomSyncedValue<T>(customSyncedValue);
     }
