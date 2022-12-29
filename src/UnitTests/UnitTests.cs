@@ -18,6 +18,7 @@ namespace UnitTests
         , ModName = "My Unit Test"
         , ModRequired = true
         , ModVersion = "1.0.0"
+        , MinModVersion = "1.0.0"
         , Plugin = null
       };
 
@@ -27,7 +28,7 @@ namespace UnitTests
       var value = configEntry.Value;
 
       var customSyncedValue = configProvider.AddCustomSyncedValue("unitTest", true);
-      var boxeVal = customSyncedValue.BoxedValue;
+      var boxedVal = customSyncedValue.BoxedValue;
       var val = customSyncedValue.Value;
       var type = customSyncedValue.Type;
       var guid = customSyncedValue.Guid;

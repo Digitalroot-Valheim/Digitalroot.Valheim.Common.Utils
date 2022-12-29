@@ -14,9 +14,9 @@
       },
       "Digitalroot.Valheim.Common.Log": {
         "type": "Direct",
-        "requested": "[1.1.36, )",
-        "resolved": "1.1.36",
-        "contentHash": "29ko2W76UPvrE2z7oh4Ub8MWcBkRtrSk5xuijGGPTXbkQSOrhawqy7XnQEPaKS+tDfKCq22MQP4pdJhvQA2mlg==",
+        "requested": "[1.1.37, )",
+        "resolved": "1.1.37",
+        "contentHash": "bjsuoXXVAPNIG9AzRBM6IjELDugfpbKrQUvkLYZdguAAQuon3tkXlSw9Qs2FEUDA5BM2vw+kDGGI/QBweoIltw==",
         "dependencies": {
           "Digitalroot.Valheim.Common.Json": "1.0.27"
         }
