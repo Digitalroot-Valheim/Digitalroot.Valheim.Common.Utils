@@ -1,4 +1,3 @@
-using Digitalroot.Valheim.Common.Config;
 using NUnit.Framework;
 
 namespace UnitTests

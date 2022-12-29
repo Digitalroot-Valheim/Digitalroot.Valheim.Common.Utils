@@ -11,8 +11,4 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.3.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Digitalroot.Valheim.Common.Utils\Digitalroot.Valheim.Common.Utils.csproj" />
-  </ItemGroup>
-
 </Project>
