@@ -3,7 +3,7 @@
   <PropertyGroup>
     <AssemblyName>Digitalroot.Valheim.Common.Utils</AssemblyName>
     <TargetFrameworks>net462</TargetFrameworks>
-    <LangVersion>9</LangVersion>
+    <LangVersion>10</LangVersion>
     <PackageId>Digitalroot.Valheim.Common.Utils</PackageId>
     <RootNamespace>Digitalroot.Valheim.Common</RootNamespace>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
