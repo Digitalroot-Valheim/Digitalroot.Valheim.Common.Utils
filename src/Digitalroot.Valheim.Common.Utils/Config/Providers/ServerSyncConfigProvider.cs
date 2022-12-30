@@ -8,8 +8,9 @@ namespace Digitalroot.Valheim.Common.Config.Providers
   {
     private readonly ConfigSync _serverSyncConfigProvider;
     private readonly ConfigProviderSettings _configProviderSettings;
-    private static readonly StaticSourceLogger _loggerInstance = StaticSourceLogger.PreMadeTraceableInstance;
-    private static string _namespace = $"Digitalroot.Valheim.Common.Config.Providers.{nameof(ServerSyncConfigProvider)}";
+    // ReSharper disable twice InconsistentNaming
+    private static readonly StaticSourceLogger _loggerInstance = new("Digitalroot.ServerSync", true);
+    private static readonly string _namespace = $"Digitalroot.Valheim.Common.Config.Providers.{nameof(ServerSyncConfigProvider)}";
 
     public ServerSyncConfigProvider(ConfigProviderSettings configProviderSettings)
     {
@@ -32,7 +33,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers
                                                                     {
                                                                       ReadOnly = true
                                                                       , Browsable = false
-                                                                      , IsAdvanced = true,
+                                                                      , IsAdvanced = true
+                                                                      , IsAdminOnly = true
                                                                     }
                                                                    ));
       _serverSyncConfigProvider.AddLockingConfigEntry(lockingConfigEntry);

@@ -68,6 +68,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     static VersionCheck()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink]");
+      // ThreadingHelper.Instance.StartSyncInvoke(PatchServerSync);
       typeof(ThreadingHelper).GetMethod(nameof(ThreadingHelper.StartSyncInvoke))!
                              .Invoke(ThreadingHelper.Instance
                                      , new object[]
@@ -78,6 +79,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     public VersionCheck(string name)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       Name = name;
       ModRequired = true;
       _versionChecks.Add(this);
@@ -85,6 +87,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     public VersionCheck(ConfigSync configSync)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       _configSync = configSync;
       Name = _configSync.Name;
       _versionChecks.Add(this);
@@ -157,12 +160,36 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
       Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}][Pink] IsZNetAwakePatched : {x}, Count : {y}");
 
-      var readOnlyCollection = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))?.Postfixes;
-      if (readOnlyCollection != null)
+      var prefixes = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))?.Prefixes;
+      if (prefixes != null)
       {
-        foreach (var patch in readOnlyCollection)
+        Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] Prefixes");
+        foreach (var patch in prefixes)
         {
           Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.owner}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.Name}");
+        }
+      }
+
+      var postfixes = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))?.Postfixes;
+      if (postfixes != null)
+      {
+        Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] Postfixs");
+        foreach (var patch in postfixes)
+        {
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.owner}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.Name}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.}");
+        }
+      }
+
+      var owners = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))?.Owners;
+      if (owners != null)
+      {
+        Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] Owners");
+        foreach (var owner in owners)
+        {
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] owner : {owner}");
         }
       }
 

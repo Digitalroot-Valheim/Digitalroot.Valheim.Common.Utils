@@ -82,11 +82,13 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     static ConfigSync()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       RuntimeHelpers.RunClassConstructor(typeof(VersionCheck).TypeHandle);
     }
 
     public ConfigSync(string name)
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       Name = name;
       _configSyncs.Add(this);
       _ = new VersionCheck(this);
@@ -104,13 +106,26 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     public SyncedConfigEntry<T> AddConfigEntry<T>(ConfigEntry<T> configEntry)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}(Key : {configEntry.Definition.Key}, Section : {configEntry.Definition.Section}, Value : {configEntry.Value}), Description : {configEntry.Description.Description})");
-      if (ConfigData((ConfigEntryBase)configEntry) is SyncedConfigEntry<T> syncedEntry) return syncedEntry;
+      if (ConfigData((ConfigEntryBase)configEntry) is SyncedConfigEntry<T> syncedEntry)
+      {
+        Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] Existing entry found");
+        return syncedEntry;
+      }
 
       syncedEntry = new SyncedConfigEntry<T>(configEntry);
-      AccessTools.DeclaredField(typeof(ConfigDescription), "<Tags>k__BackingField").SetValue(configEntry.Description, (new object[] { new ConfigurationManagerAttributes() }).Concat(configEntry.Description.Tags ?? Array.Empty<object>()).Concat(new[] { syncedEntry }).ToArray());
+      AccessTools.DeclaredField(typeof(ConfigDescription)
+                                , "<Tags>k__BackingField").SetValue(configEntry.Description
+                                                                    , (new object[]
+                                                                        {
+                                                                          new ConfigurationManagerAttributes()
+                                                                        }).Concat(configEntry.Description.Tags 
+                                                                                  ?? Array.Empty<object>()).Concat(new[]
+                                                                    {
+                                                                      syncedEntry
+                                                                    }).ToArray());
       configEntry.SettingChanged += (_, _) =>
                                     {
-                                      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+                                      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}.OnSettingChanged()");
                                       if (!ProcessingServerUpdate && syncedEntry.SynchronizedConfig)
                                       {
                                         Broadcast(ZRoutedRpc.Everybody, configEntry);
