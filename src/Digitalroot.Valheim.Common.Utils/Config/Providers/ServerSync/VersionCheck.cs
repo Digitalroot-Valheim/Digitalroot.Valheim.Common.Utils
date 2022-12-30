@@ -7,7 +7,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 
 namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 {
@@ -77,6 +76,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       Harmony harmony = new("org.bepinex.helpers.ServerSync");
       foreach (Type type in typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic).Concat(new[] { typeof(VersionCheck) }).Where(t => t.IsClass))
       {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} ({type.FullName})");
         harmony.PatchAll(type);
       }
     }
@@ -197,7 +197,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
           continue;
         }
 
-        Debug.Log($"Received {check.DisplayName} version {currentVersion} and minimum version {minimumRequiredVersion} from the {(ZNet.instance.IsServer() ? "client" : "server")}.");
+        Log.Debug(_loggerInstance, $"Received {check.DisplayName} version {currentVersion} and minimum version {minimumRequiredVersion} from the {(ZNet.instance.IsServer() ? "client" : "server")}.");
 
         check.ReceivedMinimumRequiredVersion = minimumRequiredVersion;
         check.ReceivedCurrentVersion = currentVersion;
@@ -235,7 +235,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
       foreach (VersionCheck check in failedChecks)
       {
-        Debug.LogWarning(check.Error(rpc));
+        Log.Warning(_loggerInstance, check.Error(rpc));
       }
 
       if (__instance.IsServer())
@@ -277,7 +277,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
           continue;
         }
 
-        Debug.Log($"Sending {check.DisplayName} version {check.CurrentVersion} and minimum version {check.MinimumRequiredVersion} to the {(__instance.IsServer() ? "client" : "server")}.");
+        Log.Debug(_loggerInstance, $"Sending {check.DisplayName} version {check.CurrentVersion} and minimum version {check.MinimumRequiredVersion} to the {(__instance.IsServer() ? "client" : "server")}.");
 
         ZPackage zpackage = new();
         zpackage.Write(check.Name);
