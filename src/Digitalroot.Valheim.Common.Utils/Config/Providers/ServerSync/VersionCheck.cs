@@ -10,187 +10,266 @@ using System.Reflection;
 
 namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 {
-  #region ServerSync
-
-  // internal class ConfigurationManagerAttributes
-  // {
-  //   [UsedImplicitly]
-  //   public bool? ReadOnly = false;
-  // }
-
   [PublicAPI]
   [HarmonyPatch]
   public class VersionCheck
   {
-    private static readonly StaticSourceLogger _loggerInstance = StaticSourceLogger.PreMadeTraceableInstance;
-    private static string _namespace = $"Digitalroot.Valheim.Common.Config.Providers.ServerSync.{nameof(VersionCheck)}";
-    private static readonly HashSet<VersionCheck> versionChecks = new();
-    private static readonly Dictionary<string, string> notProcessedNames = new();
+    #region Props
+
+    // ReSharper disable thrice InconsistentNaming
+    private static readonly StaticSourceLogger _loggerInstance = new("Digitalroot.ServerSync", true);
+    private static readonly string _namespace = $"Digitalroot.Valheim.Common.Config.Providers.ServerSync.{nameof(VersionCheck)}";
+    private static readonly HashSet<VersionCheck> _versionChecks = new();
+    private static readonly Dictionary<string, string> _notProcessedNames = new();
 
     public string Name;
 
-    private string? displayName;
+    private string? _displayName;
 
     public string DisplayName
     {
-      get => displayName ?? Name;
-      set => displayName = value;
+      get => _displayName ?? Name;
+      set => _displayName = value;
     }
 
-    private string? currentVersion;
+    private string? _currentVersion;
 
     public string CurrentVersion
     {
-      get => currentVersion ?? "0.0.0";
-      set => currentVersion = value;
+      get => _currentVersion ?? "0.0.0";
+      set => _currentVersion = value;
     }
 
-    private string? minimumRequiredVersion;
+    private string? _minimumRequiredVersion;
 
     public string MinimumRequiredVersion
     {
-      get => minimumRequiredVersion ?? (ModRequired ? CurrentVersion : "0.0.0");
-      set => minimumRequiredVersion = value;
+      get => _minimumRequiredVersion ?? (ModRequired ? CurrentVersion : "0.0.0");
+      set => _minimumRequiredVersion = value;
     }
 
     public bool ModRequired = true;
 
-    private string? ReceivedCurrentVersion;
+    private string? _receivedCurrentVersion;
 
-    private string? ReceivedMinimumRequiredVersion;
+    private string? _receivedMinimumRequiredVersion;
 
     // Tracks which clients have passed the version check (only for servers).
-    private readonly List<ZRpc> ValidatedClients = new();
+    private readonly List<ZRpc> _validatedClients = new();
 
     // Optional backing field to use ConfigSync values (will override other fields).
-    private ConfigSync? ConfigSync;
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Style", "IDE0044:Add readonly modifier", Justification = "<Pending>")]
+    private ConfigSync? _configSync;
 
-    private static void PatchServerSync()
-    {
-      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      if (PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), "Awake"))?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch)) > 0)
-      {
-        return;
-      }
+    #endregion
 
-      Harmony harmony = new("org.bepinex.helpers.ServerSync");
-      foreach (Type type in typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic).Concat(new[] { typeof(VersionCheck) }).Where(t => t.IsClass))
-      {
-        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} ({type.FullName})");
-        harmony.PatchAll(type);
-      }
-    }
+    #region Ctors
 
     static VersionCheck()
     {
-      typeof(ThreadingHelper).GetMethod("StartSyncInvoke")!.Invoke(ThreadingHelper.Instance, new object[] { (Action)PatchServerSync });
+      
+      typeof(ThreadingHelper).GetMethod(nameof(ThreadingHelper.StartSyncInvoke))!
+                             .Invoke(ThreadingHelper.Instance
+                                     , new object[]
+                                     {
+                                       (Action)PatchServerSync
+                                     });
     }
 
     public VersionCheck(string name)
     {
       Name = name;
       ModRequired = true;
-      versionChecks.Add(this);
+      _versionChecks.Add(this);
     }
 
     public VersionCheck(ConfigSync configSync)
     {
-      ConfigSync = configSync;
-      Name = ConfigSync.Name;
-      versionChecks.Add(this);
+      _configSync = configSync;
+      Name = _configSync.Name;
+      _versionChecks.Add(this);
     }
 
+    #endregion
+
+    /// <summary>
+    /// Init
+    /// </summary>
     public void Initialize()
     {
-      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      ReceivedCurrentVersion = null;
-      ReceivedMinimumRequiredVersion = null;
-      if (ConfigSync == null)
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} _configSync == null : {_configSync == null}");
+      _receivedCurrentVersion = null;
+      _receivedMinimumRequiredVersion = null;
+      if (_configSync == null)
       {
         return;
       }
 
-      Name = ConfigSync.Name;
-      DisplayName = ConfigSync.DisplayName!;
-      CurrentVersion = ConfigSync.CurrentVersion!;
-      MinimumRequiredVersion = ConfigSync.MinimumRequiredVersion!;
-      ModRequired = ConfigSync.ModRequired;
+      Name = _configSync.Name;
+      DisplayName = _configSync.DisplayName!;
+      CurrentVersion = _configSync.CurrentVersion!;
+      MinimumRequiredVersion = _configSync.MinimumRequiredVersion!;
+      ModRequired = _configSync.ModRequired;
     }
 
+    /// <summary>
+    /// Patches ServerSync into game, patches are applied from class ConfigSync and VersionCheck
+    /// </summary>
+    private static void PatchServerSync()
+    {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      if (IsZNetAwakePatched()) return;
+
+      Harmony harmony = new("org.bepinex.helpers.ServerSync");
+
+      var patches = GetPatchesToApply().ToList();
+      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] patches.Count : {patches.Count}");
+
+      foreach (Type type in patches)
+      {
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} ({type.FullName})");
+        harmony.PatchAll(type);
+      }
+    }
+
+    #region Helper Methods
+
+    private static IEnumerable<Type> GetPatchesToApply()
+    {
+      return typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic)
+                               .Concat(new[]
+                               {
+                                 typeof(VersionCheck)
+                               }).Where(t => t.IsClass);
+    }
+
+    private static bool IsZNetAwakePatched()
+    {
+      return PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))
+                           ?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch)) > 0;
+    }
+
+    #endregion
+
+    /// <summary>
+    /// Checks if the client and server are running compatible versions.
+    /// </summary>
+    /// <returns>true|false</returns>
     private bool IsVersionOk()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      if (ReceivedMinimumRequiredVersion == null || ReceivedCurrentVersion == null)
+      if (_receivedMinimumRequiredVersion == null || _receivedCurrentVersion == null)
       {
         return !ModRequired;
       }
 
-      bool myVersionOk = new System.Version(CurrentVersion) >= new System.Version(ReceivedMinimumRequiredVersion);
-      bool otherVersionOk = new System.Version(ReceivedCurrentVersion) >= new System.Version(MinimumRequiredVersion);
+      var myVersionOk = new System.Version(CurrentVersion) >= new System.Version(_receivedMinimumRequiredVersion);
+      var otherVersionOk = new System.Version(_receivedCurrentVersion) >= new System.Version(MinimumRequiredVersion);
       return myVersionOk && otherVersionOk;
     }
 
+    /// <summary>
+    /// Create error message for when version compability fails. 
+    /// </summary>
+    /// <returns>Error message for Client</returns>
     private string ErrorClient()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      if (ReceivedMinimumRequiredVersion == null)
+      if (_receivedMinimumRequiredVersion == null)
       {
         return $"Mod {DisplayName} must not be installed.";
       }
 
-      bool myVersionOk = new System.Version(CurrentVersion) >= new System.Version(ReceivedMinimumRequiredVersion);
-      return myVersionOk ? $"Mod {DisplayName} requires maximum {ReceivedCurrentVersion}. Installed is version {CurrentVersion}." : $"Mod {DisplayName} requires minimum {ReceivedMinimumRequiredVersion}. Installed is version {CurrentVersion}.";
+      bool myVersionOk = new System.Version(CurrentVersion) >= new System.Version(_receivedMinimumRequiredVersion);
+      return myVersionOk ? $"Mod {DisplayName} requires maximum {_receivedCurrentVersion}. Installed is version {CurrentVersion}." : $"Mod {DisplayName} requires minimum {_receivedMinimumRequiredVersion}. Installed is version {CurrentVersion}.";
     }
 
+    /// <summary>
+    /// Create error message for when version compability fails. 
+    /// </summary>
+    /// <returns>Error message for Server</returns>
     private string ErrorServer(ZRpc rpc)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       return $"Disconnect: The client ({rpc.GetSocket().GetHostName()}) doesn't have the correct {DisplayName} version {MinimumRequiredVersion}";
     }
 
+    /// <summary>
+    /// Create error message for when version compability fails. 
+    /// </summary>
+    /// <param name="rpc">Error message for Client|Server</param>
+    /// <returns></returns>
     private string Error(ZRpc? rpc = null)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       return rpc == null ? ErrorClient() : ErrorServer(rpc);
     }
 
+    /// <summary>
+    /// Get collection of mods with failed version validation. 
+    /// </summary>
+    /// <returns>Collection of mods that failed version validation.</returns>
     private static VersionCheck[] GetFailedClient()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      return versionChecks.Where(check => !check.IsVersionOk()).ToArray();
+      return _versionChecks.Where(check => !check.IsVersionOk()).ToArray();
     }
 
+
+    /// <summary>
+    /// Get collection of mods with failed version validation. 
+    /// </summary>
+    /// <param name="rpc"></param>
+    /// <returns>Collection of mods that failed version validation.</returns>
     private static VersionCheck[] GetFailedServer(ZRpc rpc)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      return versionChecks.Where(check => check.ModRequired && !check.ValidatedClients.Contains(rpc)).ToArray();
+      return _versionChecks.Where(check => check.ModRequired && !check._validatedClients.Contains(rpc)).ToArray();
     }
 
+    /// <summary>
+    /// Force Game to logout in an error state.
+    /// </summary>
     private static void Logout()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       Game.instance.Logout();
-      AccessTools.DeclaredField(typeof(ZNet), "m_connectionStatus").SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
+      AccessTools.DeclaredField(typeof(ZNet),  nameof(ZNet.m_connectionStatus)).SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
     }
 
+    /// <summary>
+    /// Disconnects the Client.
+    /// </summary>
+    /// <param name="rpc"></param>
     private static void DisconnectClient(ZRpc rpc)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      rpc.Invoke("Error", (int)ZNet.ConnectionStatus.ErrorVersion);
+      rpc.Invoke(nameof(Error), (int)ZNet.ConnectionStatus.ErrorVersion);
     }
 
+    /// <summary>
+    /// Wrapper for CheckVersion
+    /// </summary>
+    /// <param name="rpc"></param>
+    /// <param name="pkg"></param>
     private static void CheckVersion(ZRpc rpc, ZPackage pkg) => CheckVersion(rpc, pkg, null);
 
+    /// <summary>
+    /// Validate mod versions.
+    /// </summary>
+    /// <param name="rpc"></param>
+    /// <param name="pkg"></param>
+    /// <param name="original"></param>
     private static void CheckVersion(ZRpc rpc, ZPackage pkg, Action<ZRpc, ZPackage>? original)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      string guid = pkg.ReadString();
-      string minimumRequiredVersion = pkg.ReadString();
-      string currentVersion = pkg.ReadString();
+      var guid = pkg.ReadString();
+      var minimumRequiredVersion = pkg.ReadString();
+      var currentVersion = pkg.ReadString();
 
-      bool matched = false;
+      var matched = false;
 
-      foreach (VersionCheck check in versionChecks)
+      foreach (var check in _versionChecks)
       {
         if (guid != check.Name)
         {
@@ -199,11 +278,11 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
         Log.Debug(_loggerInstance, $"Received {check.DisplayName} version {currentVersion} and minimum version {minimumRequiredVersion} from the {(ZNet.instance.IsServer() ? "client" : "server")}.");
 
-        check.ReceivedMinimumRequiredVersion = minimumRequiredVersion;
-        check.ReceivedCurrentVersion = currentVersion;
+        check._receivedMinimumRequiredVersion = minimumRequiredVersion;
+        check._receivedCurrentVersion = currentVersion;
         if (ZNet.instance.IsServer() && check.IsVersionOk())
         {
-          check.ValidatedClients.Add(rpc);
+          check._validatedClients.Add(rpc);
         }
 
         matched = true;
@@ -217,23 +296,33 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
           original(rpc, pkg);
           if (pkg.GetPos() == 0)
           {
-            notProcessedNames.Add(guid, currentVersion);
+            _notProcessedNames.Add(guid, currentVersion);
+            Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] _notProcessedNames.Add(guid, currentVersion), guid : {guid}, currentVersion : {currentVersion}");
           }
         }
       }
     }
 
+    /// <summary>
+    /// Check for failed validation.
+    /// On failed validation:
+    ///   Client -> Logout()
+    ///   Server -> Disconnect()
+    /// </summary>
+    /// <param name="rpc"></param>
+    /// <param name="__instance"></param>
+    /// <returns></returns>
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.RPC_PeerInfo)), HarmonyPrefix]
     private static bool RPC_PeerInfo(ZRpc rpc, ZNet __instance)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      VersionCheck[] failedChecks = __instance.IsServer() ? GetFailedServer(rpc) : GetFailedClient();
+      var failedChecks = __instance.IsServer() ? GetFailedServer(rpc) : GetFailedClient();
       if (failedChecks.Length == 0)
       {
         return true;
       }
 
-      foreach (VersionCheck check in failedChecks)
+      foreach (var check in failedChecks)
       {
         Log.Warning(_loggerInstance, check.Error(rpc));
       }
@@ -250,16 +339,21 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       return false;
     }
 
+    /// <summary>
+    /// Register RPCs and check mod versions.
+    /// </summary>
+    /// <param name="peer"></param>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.OnNewConnection)), HarmonyPrefix]
     private static void RegisterAndCheckVersion(ZNetPeer peer, ZNet __instance)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      notProcessedNames.Clear();
+      _notProcessedNames.Clear();
 
-      IDictionary rpcFunctions = (IDictionary)typeof(ZRpc).GetField("m_functions", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(peer.m_rpc);
+      var rpcFunctions = (IDictionary)typeof(ZRpc).GetField(nameof(ZRpc.m_functions), BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(peer.m_rpc);
       if (rpcFunctions.Contains("ServerSync VersionCheck".GetStableHashCode()))
       {
-        object function = rpcFunctions["ServerSync VersionCheck".GetStableHashCode()];
+        var function = rpcFunctions["ServerSync VersionCheck".GetStableHashCode()];
         Action<ZRpc, ZPackage> action = (Action<ZRpc, ZPackage>)function.GetType().GetField("m_action", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(function);
         peer.m_rpc.Register<ZPackage>("ServerSync VersionCheck", (rpc, pkg) => CheckVersion(rpc, pkg, action));
       }
@@ -268,7 +362,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         peer.m_rpc.Register<ZPackage>("ServerSync VersionCheck", CheckVersion);
       }
 
-      foreach (VersionCheck check in versionChecks)
+      foreach (var check in _versionChecks)
       {
         check.Initialize();
         // If the mod is not required, then it's enough for only one side to do the check.
@@ -287,6 +381,11 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       }
     }
 
+    /// <summary>
+    /// Clean up server's client list when a client disconnects.
+    /// </summary>
+    /// <param name="peer"></param>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(ZNet), nameof(ZNet.Disconnect)), HarmonyPrefix]
     private static void RemoveDisconnected(ZNetPeer peer, ZNet __instance)
     {
@@ -296,12 +395,16 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         return;
       }
 
-      foreach (VersionCheck check in versionChecks)
+      foreach (VersionCheck check in _versionChecks)
       {
-        check.ValidatedClients.Remove(peer.m_rpc);
+        check._validatedClients.Remove(peer.m_rpc);
       }
     }
 
+    /// <summary>
+    /// Show Error on client when disconnected
+    /// </summary>
+    /// <param name="__instance"></param>
     [HarmonyPatch(typeof(FejdStartup), nameof(FejdStartup.ShowConnectError)), HarmonyPostfix]
     private static void ShowConnectionError(FejdStartup __instance)
     {
@@ -318,7 +421,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         __instance.m_connectionFailedError.text += "\n" + error;
       }
 
-      foreach (KeyValuePair<string, string> kv in notProcessedNames.OrderBy(kv => kv.Key))
+      foreach (KeyValuePair<string, string> kv in _notProcessedNames.OrderBy(kv => kv.Key))
       {
         if (!__instance.m_connectionFailedError.text.Contains(kv.Key))
         {
@@ -327,6 +430,4 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       }
     }
   }
-
-  #endregion
 }
