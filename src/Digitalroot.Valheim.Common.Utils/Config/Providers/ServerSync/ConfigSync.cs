@@ -192,6 +192,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       private static void Postfix(ZNet __instance)
       {
         Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+        Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] _configSyncs.Count : { _configSyncs.Count }");
 
         _isServer = __instance.IsServer();
         foreach (var configSync in _configSyncs)
@@ -201,6 +202,10 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
           if (_isServer)
           {
             Log.Debug(_loggerInstance, $"Registered '{configSync.Name} ConfigSync' RPC - waiting for incoming connections");
+          }
+          else
+          {
+            Log.Debug(_loggerInstance, $"Registered '{configSync.Name} ConfigSync' RPC - waiting for connection to server");
           }
         }
 

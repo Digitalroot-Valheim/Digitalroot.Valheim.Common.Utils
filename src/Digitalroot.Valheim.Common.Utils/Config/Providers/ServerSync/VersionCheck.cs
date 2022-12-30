@@ -67,6 +67,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     static VersionCheck()
     {
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink]");
       typeof(ThreadingHelper).GetMethod(nameof(ThreadingHelper.StartSyncInvoke))!
                              .Invoke(ThreadingHelper.Instance
                                      , new object[]
@@ -116,17 +117,17 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     /// </summary>
     private static void PatchServerSync()
     {
-      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink]");
       if (IsZNetAwakePatched()) return;
 
       Harmony harmony = new("org.bepinex.helpers.ServerSync");
 
       var patches = GetPatchesToApply().ToList();
-      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] patches.Count : {patches.Count}");
+      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}][Pink] patches.Count : {patches.Count}");
 
       foreach (Type type in patches)
       {
-        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} ({type.FullName})");
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] ({type.FullName})");
         harmony.PatchAll(type);
       }
     }
@@ -148,20 +149,20 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static bool IsZNetAwakePatched()
     {
-      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} [Pink]");
 
       var y = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))
                             ?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch));
       var x = y > 0;
 
-      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] IsZNetAwakePatched : {x}, Count : {y}");
+      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}][Pink] IsZNetAwakePatched : {x}, Count : {y}");
 
       var readOnlyCollection = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))?.Postfixes;
       if (readOnlyCollection != null)
       {
         foreach (var patch in readOnlyCollection)
         {
-          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] patch.owner : {patch.owner}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.owner}");
         }
       }
 
