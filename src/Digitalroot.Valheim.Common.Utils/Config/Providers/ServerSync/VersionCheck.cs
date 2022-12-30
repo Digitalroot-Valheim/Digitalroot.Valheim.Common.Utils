@@ -68,13 +68,13 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     static VersionCheck()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink]");
-      // ThreadingHelper.Instance.StartSyncInvoke(PatchServerSync);
-      typeof(ThreadingHelper).GetMethod(nameof(ThreadingHelper.StartSyncInvoke))!
-                             .Invoke(ThreadingHelper.Instance
-                                     , new object[]
-                                     {
-                                       (Action)PatchServerSync
-                                     });
+      ThreadingHelper.Instance.StartSyncInvoke(PatchServerSync);
+      // typeof(ThreadingHelper).GetMethod(nameof(ThreadingHelper.StartSyncInvoke))!
+      //                        .Invoke(ThreadingHelper.Instance
+      //                                , new object[]
+      //                                {
+      //                                  (Action)PatchServerSync
+      //                                });
     }
 
     public VersionCheck(string name)
@@ -115,14 +115,24 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       ModRequired = _configSync.ModRequired;
     }
 
+    private static bool _isPatched;
+    private static int _patchServerSyncCallCount;
+
     /// <summary>
     /// Patches ServerSync into game, patches are applied from class ConfigSync and VersionCheck
     /// </summary>
     private static void PatchServerSync()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink]");
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink]");
+
+      _patchServerSyncCallCount++;
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Blue] _patchServerSyncCallCount : {_patchServerSyncCallCount}");
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Blue] _isPatched : {_isPatched}");
+
       if (IsZNetAwakePatched()) return;
 
+      _isPatched = true;
       Harmony harmony = new("org.bepinex.helpers.ServerSync");
 
       var patches = GetPatchesToApply().ToList();
@@ -167,9 +177,9 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         foreach (var patch in prefixes)
         {
           Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.owner}");
-          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.Name}");
-          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType}");
-          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType?.FullName}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.PatchMethod.Name : {patch.PatchMethod.Name}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.PatchMethod.DeclaringType : {patch.PatchMethod.DeclaringType}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.PatchMethod.DeclaringType?.FullName : {patch.PatchMethod.DeclaringType?.FullName}");
         }
       }
 
@@ -180,9 +190,9 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         foreach (var patch in postfixes)
         {
           Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.owner}");
-          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.Name}");
-          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType}");
-          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType?.FullName}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.PatchMethod.Name : {patch.PatchMethod.Name}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.PatchMethod.DeclaringType : {patch.PatchMethod.DeclaringType}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.PatchMethod.DeclaringType?.FullName : {patch.PatchMethod.DeclaringType?.FullName}");
         }
       }
 

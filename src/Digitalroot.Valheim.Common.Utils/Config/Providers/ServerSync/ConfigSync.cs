@@ -227,6 +227,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         // ReSharper disable once IdentifierTypo
         IEnumerator WatchAdminListChangesCoroutine()
         {
+          Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Blue]");
           var adminList = (SyncedList)AccessTools.DeclaredField(typeof(ZNet), nameof(ZNet.m_adminList)).GetValue(ZNet.instance);
           List<string> CurrentList = new(adminList.GetList());
           for (;;)
