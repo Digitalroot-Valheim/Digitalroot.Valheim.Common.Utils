@@ -67,7 +67,6 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     static VersionCheck()
     {
-      
       typeof(ThreadingHelper).GetMethod(nameof(ThreadingHelper.StartSyncInvoke))!
                              .Invoke(ThreadingHelper.Instance
                                      , new object[]
@@ -136,17 +135,26 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static IEnumerable<Type> GetPatchesToApply()
     {
-      return typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic)
-                               .Concat(new[]
-                               {
-                                 typeof(VersionCheck)
-                               }).Where(t => t.IsClass);
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+
+      var x = typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic)
+                                .Concat(new[]
+                                {
+                                  typeof(VersionCheck)
+                                }).Where(t => t.IsClass);
+      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] GetPatchesToApply.Count : {x.Count()}");
+      return x;
     }
 
     private static bool IsZNetAwakePatched()
     {
-      return PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))
-                           ?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch)) > 0;
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+
+      var y = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))
+                            ?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch));
+      var x = y > 0;
+      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] IsZNetAwakePatched : {x}, Count : {y}");
+      return x;
     }
 
     #endregion
@@ -234,7 +242,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       Game.instance.Logout();
-      AccessTools.DeclaredField(typeof(ZNet),  nameof(ZNet.m_connectionStatus)).SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
+      AccessTools.DeclaredField(typeof(ZNet), nameof(ZNet.m_connectionStatus)).SetValue(null, ZNet.ConnectionStatus.ErrorVersion);
     }
 
     /// <summary>
