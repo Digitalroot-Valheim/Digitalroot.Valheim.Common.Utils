@@ -253,11 +253,12 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       [HarmonyPostfix]
       private static void Postfix(ZNet __instance, ZNetPeer peer)
       {
-        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} __instance.IsServer() : {__instance.IsServer()}");
         if (__instance.IsServer()) return;
 
         foreach (var configSync in _configSyncs)
         {
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] configSync.Name : {configSync.Name}");
           peer.m_rpc.Register<ZPackage>(configSync.Name + " ConfigSync", configSync.RPC_InitialConfigSync);
         }
       }
@@ -555,9 +556,11 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       try
       {
         Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+        Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] _isServer : {_isServer}, IsLocked : {IsLocked}");
         if (_isServer && IsLocked)
         {
           var exempt = ((SyncedList?)AccessTools.DeclaredField(typeof(ZNet), nameof(ZNet.m_adminList)).GetValue(ZNet.instance))?.Contains(SnatchCurrentlyHandlingRPC.currentRpc?.GetSocket()?.GetHostName());
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] exempt : {exempt}");
           if (exempt == false)
           {
             return;

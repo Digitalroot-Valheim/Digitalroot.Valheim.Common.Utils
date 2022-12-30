@@ -336,6 +336,7 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       var failedChecks = __instance.IsServer() ? GetFailedServer(rpc) : GetFailedClient();
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name} failedChecks.Length : {failedChecks.Length}");
       if (failedChecks.Length == 0)
       {
         return true;
