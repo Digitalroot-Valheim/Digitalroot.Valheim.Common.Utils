@@ -153,7 +153,18 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       var y = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))
                             ?.Postfixes.Count(p => p.PatchMethod.DeclaringType == typeof(ConfigSync.RegisterRPCPatch));
       var x = y > 0;
+
       Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] IsZNetAwakePatched : {x}, Count : {y}");
+
+      var readOnlyCollection = PatchProcessor.GetPatchInfo(AccessTools.DeclaredMethod(typeof(ZNet), nameof(ZNet.Awake)))?.Postfixes;
+      if (readOnlyCollection != null)
+      {
+        foreach (var patch in readOnlyCollection)
+        {
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] patch.owner : {patch.owner}");
+        }
+      }
+
       return x;
     }
 
