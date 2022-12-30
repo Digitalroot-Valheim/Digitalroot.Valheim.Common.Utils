@@ -168,6 +168,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         {
           Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.owner}");
           Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.Name}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType?.FullName}");
         }
       }
 
@@ -179,6 +181,8 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
         {
           Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.owner}");
           Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.Name}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType}");
+          Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] patch.owner : {patch.PatchMethod.DeclaringType?.FullName}");
         }
       }
 
