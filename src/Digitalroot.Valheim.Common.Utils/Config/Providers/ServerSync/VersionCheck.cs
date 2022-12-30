@@ -123,11 +123,11 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
       Harmony harmony = new("org.bepinex.helpers.ServerSync");
 
       var patches = GetPatchesToApply().ToList();
-      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}][Pink] patches.Count : {patches.Count}");
+      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}][Green] patches.Count : {patches.Count}");
 
       foreach (Type type in patches)
       {
-        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Pink] ({type.FullName})");
+        Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Green] ({type.FullName})");
         harmony.PatchAll(type);
       }
     }
@@ -136,14 +136,14 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
 
     private static IEnumerable<Type> GetPatchesToApply()
     {
-      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
+      Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}[Green]");
 
       var x = typeof(ConfigSync).GetNestedTypes(BindingFlags.NonPublic)
                                 .Concat(new[]
                                 {
                                   typeof(VersionCheck)
                                 }).Where(t => t.IsClass);
-      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}] GetPatchesToApply.Count : {x.Count()}");
+      Log.Trace(_loggerInstance, $"[{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}][Green] GetPatchesToApply.Count : {x.Count()}");
       return x;
     }
 
