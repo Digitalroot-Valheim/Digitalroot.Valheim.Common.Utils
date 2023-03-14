@@ -4,20 +4,11 @@
     ".NETFramework,Version=v4.6.2": {
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[17.4.1, )",
-        "resolved": "17.4.1",
-        "contentHash": "kJ5/v2ad+VEg1fL8UH18nD71Eu+Fq6dM4RKBVqlV2MLSEK/AW4LUkqlk7m7G+BrxEDJVwPjxHam17nldxV80Ow==",
+        "requested": "[17.5.0, )",
+        "resolved": "17.5.0",
+        "contentHash": "IJ4eSPcsRbwbAZehh1M9KgejSy0u3d0wAdkJytfCh67zOaCl5U3ltruUEe15MqirdRqGmm/ngbjeaVeGapSZxg==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "17.4.1"
-        }
-      },
-      "Microsoft.NETFramework.ReferenceAssemblies": {
-        "type": "Direct",
-        "requested": "[1.0.3, )",
-        "resolved": "1.0.3",
-        "contentHash": "vUc9Npcs14QsyOD01tnv/m8sQUnGTGOw1BCmKcv77LBJY7OxhJ+zJF7UD/sCL3lYNFuqmQEVlkfS4Quif6FyYg==",
-        "dependencies": {
-          "Microsoft.NETFramework.ReferenceAssemblies.net462": "1.0.3"
+          "Microsoft.CodeCoverage": "17.5.0"
         }
       },
       "NUnit": {
@@ -28,19 +19,14 @@
       },
       "NUnit3TestAdapter": {
         "type": "Direct",
-        "requested": "[4.3.1, )",
-        "resolved": "4.3.1",
-        "contentHash": "R+bGFtsUpLWywjT1nb3xMmoVa2AIw6ClIGC+XjW9lYE8hwJeos+NdR/mtg4RXbBphmC9epALrnUc6MM7mUG8+Q=="
+        "requested": "[4.4.2, )",
+        "resolved": "4.4.2",
+        "contentHash": "vA/iHYcR+LYw+pRWQugckC/zW2fXHaqMr2uA82NOBt8v4YK4wMJrQ7QC8XLc7PjetEZ96cPbBTWsDDtmQiRZTA=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "17.4.1",
-        "contentHash": "T21KxaiFawbrrjm0uXjxAStXaBm5P9H6Nnf8BUtBTvIpd8q57lrChVBCY2dnazmSu9/kuX4z5+kAOT78Dod7vA=="
-      },
-      "Microsoft.NETFramework.ReferenceAssemblies.net462": {
-        "type": "Transitive",
-        "resolved": "1.0.3",
-        "contentHash": "IzAV30z22ESCeQfxP29oVf4qEo8fBGXLXSU6oacv/9Iqe6PzgHDKCaWfwMBak7bSJQM0F5boXWoZS+kChztRIQ=="
+        "resolved": "17.5.0",
+        "contentHash": "6FQo0O6LKDqbCiIgVQhJAf810HSjFlOj7FunWaeOGDKxy8DAbpHzPk4SfBTXz9ytaaceuIIeR6hZgplt09m+ig=="
       }
     }
   }
