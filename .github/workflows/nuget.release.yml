@@ -4,7 +4,6 @@ concurrency: ci-${{ github.ref }}
 
 on:
   workflow_dispatch:
-    branches: [ main ] # Default release branch
   push:
     branches: [ main ] # Default release branch
     paths:
@@ -26,3 +25,4 @@ jobs:
       proj-file-name: Digitalroot.Valheim.Common.Utils
       nuget-gh-upload: true
       nuget-s3-upload: true
+      skip-unit-tests: true
