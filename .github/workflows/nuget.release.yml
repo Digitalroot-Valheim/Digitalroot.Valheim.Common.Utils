@@ -6,9 +6,11 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ] # Default release branch
-    paths:
-      - 'src/**'   
-      - '.github/workflows/**' 
+    paths-ignore:
+      - '.github/**'
+      - 'docs/**'
+      - '**/.ts/**'
+      - '**/.nx/**' 
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -23,6 +25,9 @@ jobs:
     with:
       sln-file-name: Digitalroot.Valheim.Common.Utils
       proj-file-name: Digitalroot.Valheim.Common.Utils
+      is-nuget-package: true
       nuget-gh-upload: true
       nuget-s3-upload: true
       skip-unit-tests: true
+      ts-enable-upload: false
+      nexus-enable-upload: false

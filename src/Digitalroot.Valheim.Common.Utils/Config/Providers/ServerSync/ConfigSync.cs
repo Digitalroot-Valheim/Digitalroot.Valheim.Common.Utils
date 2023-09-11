@@ -83,15 +83,15 @@ namespace Digitalroot.Valheim.Common.Config.Providers.ServerSync
     static ConfigSync()
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
-      RuntimeHelpers.RunClassConstructor(typeof(VersionCheck).TypeHandle);
+      // RuntimeHelpers.RunClassConstructor(typeof(VersionCheck).TypeHandle);
     }
 
     public ConfigSync(string name)
     {
       Log.Trace(_loggerInstance, $"{_namespace}.{MethodBase.GetCurrentMethod()?.DeclaringType?.Name}.{MethodBase.GetCurrentMethod()?.Name}");
       Name = name;
-      _configSyncs.Add(this);
-      _ = new VersionCheck(this);
+      // _configSyncs.Add(this);
+      // _ = new VersionCheck(this);
     }
 
     #endregion
