@@ -2,15 +2,6 @@
   "version": 1,
   "dependencies": {
     ".NETFramework,Version=v4.8": {
-      "Microsoft.NET.Test.Sdk": {
-        "type": "Direct",
-        "requested": "[17.9.0, )",
-        "resolved": "17.9.0",
-        "contentHash": "7GUNAUbJYn644jzwLm5BD3a2p9C1dmP8Hr6fDPDxgItQk9hBs1Svdxzz07KQ/UphMSmgza9AbijBJGmw5D658A==",
-        "dependencies": {
-          "Microsoft.CodeCoverage": "17.9.0"
-        }
-      },
       "NUnit": {
         "type": "Direct",
         "requested": "[4.1.0, )",
@@ -25,11 +16,6 @@
         "requested": "[4.5.0, )",
         "resolved": "4.5.0",
         "contentHash": "s8JpqTe9bI2f49Pfr3dFRfoVSuFQyraTj68c3XXjIS/MRGvvkLnrg6RLqnTjdShX+AdFUCCU/4Xex58AdUfs6A=="
-      },
-      "Microsoft.CodeCoverage": {
-        "type": "Transitive",
-        "resolved": "17.9.0",
-        "contentHash": "RGD37ZSrratfScYXm7M0HjvxMxZyWZL4jm+XgMZbkIY1UPgjUpbNA/t+WTGj/rC/0Hm9A3IrH3ywbKZkOCnoZA=="
       },
       "System.Runtime.CompilerServices.Unsafe": {
         "type": "Transitive",

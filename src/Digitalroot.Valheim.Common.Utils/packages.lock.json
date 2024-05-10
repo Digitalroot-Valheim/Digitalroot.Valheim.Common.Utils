@@ -14,12 +14,18 @@
       },
       "Digitalroot.Valheim.Common.Log": {
         "type": "Direct",
-        "requested": "[1.1.47, )",
-        "resolved": "1.1.47",
-        "contentHash": "BvIp2vEYnlvZwj/SRYxZUHMfQS80TXuWqHtg4hsS7nD8ao+ybSIqG15/0ChtlJPyDiR9gmmvnQMPqHqisTK48w==",
+        "requested": "[1.1.48, )",
+        "resolved": "1.1.48",
+        "contentHash": "CO75IjKZI1N2hZHebHGrL46zPSKS7SDc1ws14q7s/qui8BaJYdiVLIfH2DHK6EHyi8ROyDKGst+NMAnLsPMNMQ==",
         "dependencies": {
-          "Digitalroot.Valheim.Common.Json": "1.0.35"
+          "Digitalroot.Valheim.Common.Json": "1.0.36"
         }
+      },
+      "Digitalroot.Valheim.Common.References": {
+        "type": "Direct",
+        "requested": "[0.218.14, )",
+        "resolved": "0.218.14",
+        "contentHash": "8dMznAyPkousBWKy1zoq6JvYYLxEatNqoDoB9Ys/KfXSOHWnlLvrYmHwxB8tLb6lvruEQO0nBL/Il123lCIg/A=="
       },
       "BepInEx.BaseLib": {
         "type": "Transitive",
@@ -28,28 +34,17 @@
       },
       "Digitalroot.References.Unity": {
         "type": "Transitive",
-        "resolved": "2022.3.12",
-        "contentHash": "QgMwg+WAnbvmjxSuL+PKjr+35B0FhO0Thw9ddoSBrfBkYsMSCYAqJ0APsN2AQfXn3zVdJgP7Rw2S41DJfuBxRQ=="
+        "resolved": "2022.3.17",
+        "contentHash": "edxgtveXwn+ACtMyak1McLwoQxKm/GXdh8Drcx2hoFl5VoFeR9wdwEz1yJdVtbamtecZOVghEn3tKKR3ekqOeg=="
       },
       "Digitalroot.Valheim.Common.Json": {
         "type": "Transitive",
-        "resolved": "1.0.35",
-        "contentHash": "gq2jtc+nPTnJUvvCp25pSSyV7ww46cWrIPD7svmiP6Bt3xOFx/B7Ig1sShdRqDVgrTc3ts5HAAzSF48fAwPP1w==",
+        "resolved": "1.0.36",
+        "contentHash": "GBXdkuV3awATaosJgVn5I6RUOTDXdGJcTtoBxvX0uD6wncopYGBeDHNZB1QBZg/KQPBPkFB5hES7tvwVs6hzTg==",
         "dependencies": {
-          "Digitalroot.References.Unity": "2022.3.12",
-          "Digitalroot.Valheim.Common.References": "0.218.9",
-          "fastJSON": "2.4.0.4"
+          "Digitalroot.References.Unity": "2022.3.17",
+          "System.Text.Json": "8.0.3"
         }
-      },
-      "Digitalroot.Valheim.Common.References": {
-        "type": "Transitive",
-        "resolved": "0.218.9",
-        "contentHash": "dWJmBZrP0Zkb3YF2jea3flpg+GpkSLuUmtkWwrFosCDcskARxWBe93mL4Zfsy2Um0vJx1UfeWWyqgF6CKxGA1w=="
-      },
-      "fastJSON": {
-        "type": "Transitive",
-        "resolved": "2.4.0.4",
-        "contentHash": "lbxY+miTOvCNbNfOk8HcbmBD9F6wv2dRKZlMjtJBm6rjA5vFKXBYtR6eoIe96HnCHOE1nCJbMsaZDKGNPg5mIA=="
       },
       "HarmonyX": {
         "type": "Transitive",
@@ -57,6 +52,14 @@
         "contentHash": "lec/SkduQspMa3Pi/nM/NSvA84Za8HCCWA8ybdToKiTqnBZa+JC5g6rxoFQCg/1vNuYcvjy77edePZzIEsRmvw==",
         "dependencies": {
           "MonoMod.RuntimeDetour": "21.12.13.1"
+        }
+      },
+      "Microsoft.Bcl.AsyncInterfaces": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "3WA9q9yVqJp222P3x1wYIGDAkpjAku0TMUaaQV22g6L67AI0LdOIrVS7Ht2vJfLHGSPVuqN94vIr15qn+HEkHw==",
+        "dependencies": {
+          "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
       "Mono.Cecil": {
@@ -80,6 +83,68 @@
         "dependencies": {
           "Mono.Cecil": "0.11.4"
         }
+      },
+      "System.Buffers": {
+        "type": "Transitive",
+        "resolved": "4.5.1",
+        "contentHash": "Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg=="
+      },
+      "System.Memory": {
+        "type": "Transitive",
+        "resolved": "4.5.5",
+        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw==",
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Numerics.Vectors": "4.5.0",
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
+      "System.Numerics.Vectors": {
+        "type": "Transitive",
+        "resolved": "4.5.0",
+        "contentHash": "QQTlPTl06J/iiDbJCiepZ4H//BVraReU4O4EoRw1U02H5TLUIT7xn3GnDp9AXPSlJUDyFs4uWjWafNX6WrAojQ=="
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
+      },
+      "System.Text.Encodings.Web": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "yev/k9GHAEGx2Rg3/tU6MQh4HGBXJs70y7j1LaM1i/ER9po+6nnQ6RRqTJn1E7Xu0fbIFK80Nh5EoODxrbxwBQ==",
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
+      },
+      "System.Text.Json": {
+        "type": "Transitive",
+        "resolved": "8.0.3",
+        "contentHash": "hpagS9joOwv6efWfrMmV9MjQXpiXZH72PgN067Ysfr6AWMSD1/1hEcvh/U5mUpPLezEWsOJSuVrmqDIVD958iA==",
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "8.0.0",
+          "System.Buffers": "4.5.1",
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
+          "System.Text.Encodings.Web": "8.0.0",
+          "System.Threading.Tasks.Extensions": "4.5.4",
+          "System.ValueTuple": "4.5.0"
+        }
+      },
+      "System.Threading.Tasks.Extensions": {
+        "type": "Transitive",
+        "resolved": "4.5.4",
+        "contentHash": "zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "4.5.3"
+        }
+      },
+      "System.ValueTuple": {
+        "type": "Transitive",
+        "resolved": "4.5.0",
+        "contentHash": "okurQJO6NRE/apDIP23ajJ0hpiNmJ+f0BwOlB/cSqTLQlw5upkf+5+96+iG2Jw40G1fCVCyPz/FhIABUjMR+RQ=="
       }
     }
   }
