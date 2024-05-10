@@ -48,7 +48,7 @@
     <PackageReference Include="BepInEx.Core" Version="[5.4.21]">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.48" />
+    <PackageReference Include="Digitalroot.Valheim.Common.Log" Version="1.1.49" />
         <PackageReference Include="Digitalroot.Valheim.Common.References" Version="0.218.14">
       <PrivateAssets>all</PrivateAssets>
       <ExcludeAssets>runtime</ExcludeAssets>
