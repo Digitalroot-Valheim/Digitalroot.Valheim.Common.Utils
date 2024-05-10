@@ -14,11 +14,11 @@
       },
       "Digitalroot.Valheim.Common.Log": {
         "type": "Direct",
-        "requested": "[1.1.50, )",
-        "resolved": "1.1.50",
-        "contentHash": "23w+/sPXgbZW5OC569ZGOipRpzg5d4uHOsffjgIJ87zkWFXPDqjLXdSDX6l0OvsS3VzNZmt2Kc3DCKbmJ/BJhQ==",
+        "requested": "[1.1.51, )",
+        "resolved": "1.1.51",
+        "contentHash": "ybt99HGXMPK9+Jw1AU23DePKl82CR/x7oN5tW2Kttlwx9IFlRUnkIalDQiZte2pw3w+H6y/GwFydwcRuP/fCJg==",
         "dependencies": {
-          "Digitalroot.Valheim.Common.Json": "1.0.38"
+          "Digitalroot.Valheim.Common.Json": "1.0.39"
         }
       },
       "Digitalroot.Valheim.Common.References": {
@@ -48,8 +48,8 @@
       },
       "Digitalroot.Valheim.Common.Json": {
         "type": "Transitive",
-        "resolved": "1.0.38",
-        "contentHash": "Vrb81evp7P+Z36hm6KfhPZSIPCzrgSo1cjwPLCUkw711T7uoMd/Qh5z86OB/Ah5vgmGkqXnXOdwWRlrPt2S2lg==",
+        "resolved": "1.0.39",
+        "contentHash": "AOQJgndG4hoVNw3cD8lS/xLE+BQ3cRPO1PkcVy775Ryau96lmhcWfMaI6T7MHD0tVgOQnvnWkap+nlzZOS9XpQ==",
         "dependencies": {
           "Digitalroot.References.Unity": "2022.3.17",
           "System.Text.Json": "8.0.3"
