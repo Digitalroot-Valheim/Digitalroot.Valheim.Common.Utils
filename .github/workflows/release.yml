@@ -1,4 +1,4 @@
-name: NuGet Release
+name: Release
 
 concurrency: ci-${{ github.ref }}
 
@@ -9,8 +9,7 @@ on:
     paths-ignore:
       - '.github/**'
       - 'docs/**'
-      - '**/.ts/**'
-      - '**/.nx/**' 
+      - '**/*.sln'
 
 env:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
